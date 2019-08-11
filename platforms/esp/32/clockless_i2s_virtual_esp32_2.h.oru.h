@@ -62,11 +62,12 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #ifndef NBIS2SERIALPINS
 #define NBIS2SERIALPINS 1
 #endif
+#define LANES NUM_VIRT_PINS * NBIS2SERIALPINS
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
 static int gNumStarted = 0;
-
+static CLEDController * gControllers[1];
 // -- Global semaphore for the whole show process
 //    Semaphore is not given until all data has been sent
 static xSemaphoreHandle gTX_sem = NULL;
@@ -113,7 +114,7 @@ static int CLOCK_DIVIDER_N;
 static int CLOCK_DIVIDER_A;
 static int CLOCK_DIVIDER_B;
 static int dmaBufferActive;
-	
+
 	static volatile bool stopSignal;
  static volatile bool runningPixel=false;
 	
@@ -144,10 +145,11 @@ static int dmaBufferActive;
     static int ledType;
 	 static volatile CRGB *int_leds;
 	 static CRGB m_scale;
+
+
 //template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 5>
-//<Pins,CLOCK_PIN,LATCH_PIN, GRB>
 template<int *Pins,int CLOCK_PIN,int LATCH_PIN, EOrder RGB_ORDER = GRB>
-class ClocklessController : public CPixelLEDController<RGB_ORDER>
+class ClocklessController : public CPixelLEDController<RGB_ORDER,LANES>
 {
    
   //int *Pins;
@@ -155,6 +157,8 @@ class ClocklessController : public CPixelLEDController<RGB_ORDER>
 	const int deviceClockIndex[2] = {I2S0O_BCK_OUT_IDX, I2S1O_BCK_OUT_IDX};
 	const int deviceWordSelectIndex[2] = {I2S0O_WS_OUT_IDX, I2S1O_WS_OUT_IDX};
 	const periph_module_t deviceModule[2] = {PERIPH_I2S0_MODULE, PERIPH_I2S1_MODULE};
+    PixelController<RGB_ORDER,LANES> * mPixels;
+    
 public:
 
     void init()
@@ -163,7 +167,8 @@ public:
 		
      //Serial.printf("%d %d %d\n",CLOCK_PIN,LATCH_PIN,NUM_LED_PER_STRIP);
 	 
-	  
+	  mPixels = (PixelController<RGB_ORDER,LANES> *) malloc(sizeof(PixelController<RGB_ORDER,LANES>));
+gControllers[0] = this;
 	  for (int i = 0; i < NBIS2SERIALPINS; i++)
 		if (Pins[i] > -1)
 		{
@@ -356,18 +361,21 @@ protected:
     
     // -- Show pixels
     //    This is the main entry point for the controller.
-    virtual void showPixels(PixelController<RGB_ORDER> & pixels)
+    virtual void showPixels(PixelController<RGB_ORDER,LANES> & pixels)
     {
         
 		//Serial.println("Show");
+        (*mPixels) = pixels;
 			int_leds=(CRGB*)pixels.mData;
-			m_scale=pixels.mScale;
         nun_led_per_strip=  pixels.mLen;
+        Serial.printf("strip length %d\n",nun_led_per_strip);
+        Serial.printf("NB OF LANES %d\n",LANES);
+			m_scale=pixels.mScale;
 			//Serial.printf("led - r:%d v:%d b%d\n",m_scale.r,m_scale.g,m_scale.b);
 			
-			 brightness_b=256/(m_scale.b+1);
-			  brightness_r=256/(m_scale.r+1);
-			 brightness_g=256/(m_scale.g+1);
+			 brightness_b=m_scale.b;//256/(m_scale.b+1);
+			  brightness_r=m_scale.r;//256/(m_scale.r+1);
+			 brightness_g=m_scale.g;//256/(m_scale.g+1);
 			//for(int j=0;j<50;j++)
 			//{
 				//Serial.printf("led n:%d r:%d v:%d b%d\n",j,int_leds[j].r,int_leds[j].g,int_leds[j].b);
@@ -608,7 +616,7 @@ static void fillbuffer6(uint32_t *buff)
  
   int nbpins=20;//	this->nbpins;
   
-  
+  ClocklessController * pController = static_cast<ClocklessController*>(gControllers[0]);
    uint32_t l2=ledToDisplay;
    //Serial.println(ledToDisplay);
 	 uint32_t offset=(7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS;
@@ -620,14 +628,14 @@ static void fillbuffer6(uint32_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
  
  
-			firstPixel[0].bytes[pin] = int_leds[l].g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = int_leds[l].r/brightness_r;
-            firstPixel[2].bytes[pin] = int_leds[l].b/brightness_b;
-			l+=nun_led_per_strip*NUM_VIRT_PINS;
+           firstPixel[0].bytes[pin] = pController->mPixels->loadAndScale0(pin+line*NBIS2SERIALPINS);//scale8(int_leds[l].g,brightness_g);//int_leds[l].g/brightness_g;
+            firstPixel[1].bytes[pin] = pController->mPixels->loadAndScale1(pin+line*NBIS2SERIALPINS);//scale8(int_leds[l].r,brightness_r);//int_leds[l].r/brightness_r;
+            firstPixel[2].bytes[pin] = pController->mPixels->loadAndScale2(pin+line*NBIS2SERIALPINS);//scale8(int_leds[l].b,brightness_b);//int_leds[l].b/brightness_b;
+			//l+=nun_led_per_strip*NUM_VIRT_PINS;
 
 
 			}
-			 l2+=nun_led_per_strip;
+			// l2+=nun_led_per_strip;
 			 
 			transpose24x1_noinline(firstPixel[0].bytes,(uint8_t*)&buff[offset],(NUM_VIRT_PINS+1)*3*4);
         		transpose24x1_noinline(firstPixel[1].bytes,(uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);
@@ -635,6 +643,8 @@ static void fillbuffer6(uint32_t *buff)
 				offset--;
 				
 		}
+    pController->mPixels->advanceData();
+    pController->mPixels->stepDithering();
 }
 
     
