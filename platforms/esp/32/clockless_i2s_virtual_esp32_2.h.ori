@@ -443,11 +443,6 @@ protected:
         if(ledToDisplay<=nun_led_per_strip)
         {
             
-            
-            
-            
-            
-			
 			if(ledToDisplay==nun_led_per_strip)
 			{
 				pu( (uint32_t*)dmaBuffers[dmaBufferActive]->buffer);
