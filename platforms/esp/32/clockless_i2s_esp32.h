@@ -131,7 +131,7 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 
 // -- I2S clock
 #define I2S_BASE_CLK (80000000L)
-#define I2S_MAX_CLK (20000000L) //more tha a certain speed and the I2s looses some bits
+#define I2S_MAX_CLK (15000000L) //more tha a certain speed and the I2s looses some bits
 #define I2S_MAX_PULSE_PER_BIT 20 //put it higher to get more accuracy but it could decrease the refresh rate without real improvement
 // -- Convert ESP32 cycles back into nanoseconds
 #define ESPCLKS_TO_NS(_CLKS) (((long)(_CLKS) * 1000L) / F_CPU_MHZ)
@@ -586,6 +586,7 @@ protected:
             
             // -- Reset the counters
             gNumStarted = 0;
+            delayMicroseconds(500);
         }
     }
     

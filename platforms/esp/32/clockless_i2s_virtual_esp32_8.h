@@ -58,10 +58,15 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define I2S_MAX_PULSE_PER_BIT 20 //put it higher to get more accuracy but it could decrease the refresh rate without real improvement
 // -- Convert ESP32 cycles back into nanoseconds
 #define ESPCLKS_TO_NS(_CLKS) (((long)(_CLKS) * 1000L) / F_CPU_MHZ)
-#define NUM_VIRT_PINS 5
+#define NUM_VIRT_PINS 7
 #ifndef NBIS2SERIALPINS
 #define NBIS2SERIALPINS 1
 #endif
+#ifndef NUM_LEDS_PER_STRIP
+#define NUM_LEDS_PER_STRIP 256
+#endif
+#define OFFSET NUM_VIRT_PINS + 1
+#define I2S_OFF (NUM_VIRT_PINS + 1 )* NUM_LEDS_PER_STRIP
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
@@ -131,7 +136,7 @@ static int dmaBufferActive;
     } Lines;*/
 	
 	typedef union {
-        uint8_t bytes[20];
+        uint8_t bytes[16];
         uint32_t shorts[8]; 
         uint32_t raw[2];
     } Lines;
@@ -144,6 +149,7 @@ static int dmaBufferActive;
     static int ledType;
 	 static volatile CRGB *int_leds;
 	 static CRGB m_scale;
+//static Lines firstPixel[3];
 //template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 5>
 //<Pins,CLOCK_PIN,LATCH_PIN, GRB>
 template<int *Pins,int CLOCK_PIN,int LATCH_PIN, EOrder RGB_ORDER = GRB>
@@ -162,15 +168,15 @@ public:
        // brigthness=10;
 		
      //Serial.printf("%d %d %d\n",CLOCK_PIN,LATCH_PIN,NUM_LED_PER_STRIP);
-	 
-	  
+
+        
 	  for (int i = 0; i < NBIS2SERIALPINS; i++)
 		if (Pins[i] > -1)
 		{
 			PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[Pins[i]], PIN_FUNC_GPIO);
 			gpio_set_direction((gpio_num_t)Pins[i], (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
      pinMode(Pins[i],OUTPUT);
-			gpio_matrix_out(Pins[i], deviceBaseIndex[I2S_DEVICE] + i, false, false);
+			gpio_matrix_out(Pins[i], deviceBaseIndex[I2S_DEVICE] + i+8, false, false);
 		}
 		
 		//latch pin
@@ -181,6 +187,7 @@ public:
 	//if (baseClock > -1)
 	//clock pin
 		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
+       // gpio_matrix_out(26, deviceWordSelectIndex[I2S_DEVICE], false, false);
        i2sInit();
       
     }
@@ -240,30 +247,30 @@ protected:
         i2sReset_FIFO();
         
         // -- Main configuration
-        i2s->conf.tx_msb_right = 1;
-        i2s->conf.tx_mono = 0;
-        i2s->conf.tx_short_sync = 0;
-        i2s->conf.tx_msb_shift = 0;
-        i2s->conf.tx_right_first = 1; // 0;//1;
-        i2s->conf.tx_slave_mod = 0;
+       // i2s->conf.tx_msb_right = 1;
+        //i2s->conf.tx_mono = 0;
+        //i2s->conf.tx_short_sync = 0;
+        //i2s->conf.tx_msb_shift = 0;
+        i2s->conf.tx_right_first = 0; // 0;//1;
+        //i2s->conf.tx_slave_mod = 0;
         
         // -- Set parallel mode
         i2s->conf2.val = 0;
         i2s->conf2.lcd_en = 1;
-        i2s->conf2.lcd_tx_wrx2_en = 0; // 0 for 16 or 32 parallel output
+        i2s->conf2.lcd_tx_wrx2_en = 1; // 0 for 16 or 32 parallel output
         i2s->conf2.lcd_tx_sdx2_en = 0; // HN
         
         // -- Set up the clock rate and sampling
         i2s->sample_rate_conf.val = 0;
-        i2s->sample_rate_conf.tx_bits_mod = 32; // Number of parallel bits/pins
+        i2s->sample_rate_conf.tx_bits_mod = 16; // Number of parallel bits/pins
         i2s->sample_rate_conf.tx_bck_div_num = 1;
         i2s->clkm_conf.val = 0;
         i2s->clkm_conf.clka_en = 1;
         
-		rtc_clk_apll_enable(true, 215, 163,4, 1); //14.4Mhz 5pins +1 latch
+		//rtc_clk_apll_enable(true, 215, 163,4, 1); //14.4Mhz 5pins +1 latch
         //rtc_clk_apll_enable(true, 123, 20,6, 1); //16.8Mhz 6 pins +1 latchtch
         //rtc_clk_apll_enable(true, 164, 112,9, 2); //16.8Mhz 6 pins +1 latchtch
-        //rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
+        rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
         
         // -- Data clock is computed as Base/(div_num + (div_b/div_a))
         //    Base is 80Mhz, so 80/(10 + 0/1) = 8Mhz
@@ -274,8 +281,8 @@ protected:
         
         i2s->fifo_conf.val = 0;
         i2s->fifo_conf.tx_fifo_mod_force_en = 1;
-        i2s->fifo_conf.tx_fifo_mod = 3;  // 32-bit single channel data
-        i2s->fifo_conf.tx_data_num = 32; // fifo length
+        i2s->fifo_conf.tx_fifo_mod = 1;  // 16-bit single channel data
+        i2s->fifo_conf.tx_data_num = 32;//32; // fifo length
         i2s->fifo_conf.dscr_en = 1;      // fifo will use dma
         
         i2s->conf1.val = 0;
@@ -288,18 +295,18 @@ protected:
         i2s->timing.val = 0;
         
         // -- Allocate two DMA buffers
-        dmaBuffers[0] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*4);
-        dmaBuffers[1] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*4);
-        dmaBuffers[2] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*4);
+        dmaBuffers[0] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*2);
+        dmaBuffers[1] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*2);
+        dmaBuffers[2] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*2);
 		
         // -- Arrange them as a circularly linked list
         dmaBuffers[0]->descriptor.qe.stqe_next = &(dmaBuffers[1]->descriptor);
         dmaBuffers[1]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
-        pu((uint32_t*)dmaBuffers[0]->buffer); //latch
-		pu((uint32_t*)dmaBuffers[1]->buffer);
+        pu((uint16_t*)dmaBuffers[0]->buffer); //latch
+		pu((uint16_t*)dmaBuffers[1]->buffer);
 		//pu((uint32_t*)this->dmaBuffers[2]->buffer);
-		pu2((uint32_t*)dmaBuffers[0]->buffer); //first pulse
-		pu2((uint32_t*)dmaBuffers[1]->buffer);
+		pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
+		pu2((uint16_t*)dmaBuffers[1]->buffer);
 	   
         // -- Allocate i2s interrupt
         SET_PERI_REG_BITS(I2S_INT_ENA_REG(I2S_DEVICE), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
@@ -316,29 +323,54 @@ protected:
         gInitialized = true;
     }
     
-	static void pu(uint32_t* buff)
-    {
-	memset((uint8_t*)buff,0,(NUM_VIRT_PINS+1)*8*3*4*3);
-	for (int i=0;i<24*3;i++)
-		{
-		 buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)]=0x80000000;
-		}
-    }
-
-   static void pu2(uint32_t* buff)
-    {
 	
-	  
-     for (int j=0;j<24;j++)
-      {
-      for (int i=0;i<NUM_VIRT_PINS;i++)
-		{
-		 *buff=0xFFFFF00;
-		 buff++;
-		}
-		buff+=3*(NUM_VIRT_PINS+1)-NUM_VIRT_PINS; //13
-      }
+    static void pu(uint16_t* buff)
+    {
+        memset((uint8_t*)buff,0,(NUM_VIRT_PINS+1)*8*3*3*2);
+        for (int i=0;i<24*3;i++)
+        {
+            buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)-1]=0x8000;
+            //buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)]=0x02;
+        }
     }
+    static void pu3(uint16_t* buff)
+    {
+       // memset((uint8_t*)buff,0,(NUM_VIRT_PINS+1)*8*3*3*2);
+        for (int i=0;i<24*3;i++)
+        {
+            buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)-1]+=0x8000;
+            //buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)]=0x02;
+        }
+    }
+        
+       static  void pu2(uint16_t* buff)
+        {
+            
+            
+            for (int j=0;j<24;j++)
+            {
+                // for (int i=0;i<NUM_VIRT_PINS;i++)
+                // {
+                //*buff=0x7FFF;
+                // buff++;
+                buff[1+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[0+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[3+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[2+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[5+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[4+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[7+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[6+j*(3*(NUM_VIRT_PINS+1))]=0xFFFF;
+                //buff[NUM_VIRT_PINS-2+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
+                //buff[NUM_VIRT_PINS-3+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
+                // buff[NUM_VIRT_PINS-4+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
+                //buff[NUM_VIRT_PINS-5+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
+                //buff[NUM_VIRT_PINS-6+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
+                //buff[NUM_VIRT_PINS-4+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
+                // }
+                //buff+=3*(NUM_VIRT_PINS+1)-NUM_VIRT_PINS; //13
+            }
+        }
 	
     /** Clear DMA buffer
      *
@@ -379,14 +411,14 @@ protected:
                 ledToDisplay=0;
         stopSignal=false;
  	
-		pu((uint32_t*)dmaBuffers[0]->buffer); //latch
-		pu((uint32_t*)dmaBuffers[1]->buffer);
-		pu((uint32_t*)dmaBuffers[2]->buffer);
+		pu((uint16_t*)dmaBuffers[0]->buffer); //latch
+		pu((uint16_t*)dmaBuffers[1]->buffer);
+		pu((uint16_t*)dmaBuffers[2]->buffer);
 		//pu((uint32_t*)this->dmaBuffers[3]->buffer);
-		pu2((uint32_t*)dmaBuffers[0]->buffer); //first pulse
-		pu2((uint32_t*)dmaBuffers[1]->buffer);
+		pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
+		pu2((uint16_t*)dmaBuffers[1]->buffer);
 		//pu2((uint32_t*)this->dmaBuffers[2]->buffer);
-		fillbuffer6((uint32_t*)dmaBuffers[0]->buffer);
+		fillbuffer6((uint16_t*)dmaBuffers[0]->buffer);
 		 ledToDisplay++;
 		//fillbuffer2((uint32_t*)dmaBuffers[1]->buffer);
 		 //ledToDisplay++;
@@ -404,7 +436,7 @@ protected:
         //startTX();
 		i2sStart();
         while(runningPixel==true);
-        delayMicroseconds(500);
+        delayMicroseconds(50);
 
     }
     
@@ -425,10 +457,12 @@ protected:
             }
         }*/
 		
-        Lines pixel[3];
+        //Lines pixel[3];
 		 if (!i2s->int_st.out_eof)
 		 return;
          i2s->int_clr.val = i2s->int_raw.val;
+       
+        
         if(stopSignal)
         {
            // Serial.println("stop");
@@ -436,7 +470,7 @@ protected:
             runningPixel=false;
             return;
         }
-        if(ledToDisplay<=nun_led_per_strip)
+        if(ledToDisplay<=NUM_LEDS_PER_STRIP)
         {
             
             
@@ -444,13 +478,17 @@ protected:
             
             
 			
-			if(ledToDisplay==nun_led_per_strip)
+			if(ledToDisplay==NUM_LEDS_PER_STRIP)
 			{
-				pu( (uint32_t*)dmaBuffers[dmaBufferActive]->buffer);
+				pu( (uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
 
+                
+                /*i2sStop();
+                runningPixel=false;
+                return;*/
 				            stopSignal=true;
 			}
-			fillbuffer6((uint32_t*)dmaBuffers[dmaBufferActive]->buffer);
+			fillbuffer6((uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
 			ledToDisplay++;
             dmaBufferActive = (dmaBufferActive + 1)% 2;
 			//if(ledToDisplay)
@@ -464,6 +502,125 @@ protected:
                 stopSignal=true;
         }
     }
+    
+    static void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
+    {
+        uint32_t x, y, t;
+        
+        // Load the array and pack it into x and y.
+        
+       // x = (A[7]<<24)   | (A[6]<<16)   | (A[5]<<8) | A[4];//(A[0]<<24)   | (A[m]<<16)   | (A[2*m]<<8) | A[3*m];
+        //y = *(uint16_t*)(A);//(A[3]<<12) | (A[2]<<8) | (A[1]<<4) | A[0];//(A[4*m]<<24) | (A[5*m]<<16) | (A[6*m]<<8) | A[7*m];
+        
+        
+        x = (A[0]<<24)   | (A[m]<<16)   | (A[2*m]<<8) | A[3*m];
+        y = (A[4*m]<<24) | (A[5*m]<<16) | (A[6*m]<<8) | A[7*m];
+        
+        t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
+       t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
+        
+        t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
+        t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
+        
+        t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
+        y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
+        x = t;
+        
+        B[0]=x>>24;    B[n]=x>>16;    B[2*n]=x>>8;  B[3*n]=x;
+        B[4*n]=y>>24;  B[5*n]=y>>16;  B[6*n]=y>>8;  B[7*n]=y;
+    }
+    
+    
+    
+    
+static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
+        uint32_t  x, y, x1,y1,t;
+        
+        
+        
+        y = *(unsigned int*)(A);
+        x = *(unsigned int*)(A+4);
+        y1 = *(unsigned int*)(A+8);
+    //x1=0;
+     x1 = *(unsigned int*)(A+12);
+        
+    
+        
+        
+        // pre-transform x
+        t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
+        t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
+       t = (x1 ^ (x1 >> 7)) & 0x00AA00AA;  x1 = x1 ^ t ^ (t << 7);
+       t = (x1 ^ (x1 >>14)) & 0x0000CCCC;  x1 = x1 ^ t ^ (t <<14);
+        // pre-transform y
+        t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
+        t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
+        t = (y1 ^ (y1 >> 7)) & 0x00AA00AA;  y1 = y1 ^ t ^ (t << 7);
+        t = (y1 ^ (y1 >>14)) & 0x0000CCCC;  y1 = y1 ^ t ^ (t <<14);
+        
+   
+        // final transform
+        t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
+        y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
+        x = t;
+        
+        t= (x1 & 0xF0F0F0F0) | ((y1 >> 4) & 0x0F0F0F0F);
+        y1 = ((x1 << 4) & 0xF0F0F0F0) | (y1 & 0x0F0F0F0F);
+        x1 = t;
+        
+        
+    /*
+        *((uint16_t*)B) = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
+        B-=offset;
+        //B-=offset;
+        *((uint16_t*)(B)) = (uint16_t)(((y & 0xff00) |((y1&0xff00) <<8))>>8);
+        B-=offset;
+        *((uint16_t*)(B)) = (uint16_t)(((y & 0xff0000) |((y1&0xff0000) <<8))>>16);
+        B-=offset;
+        *((uint16_t*)(B)) = (uint16_t)(((y & 0xff000000) >>8 |((y1&0xff000000) ))>>16);
+        B-=offset;
+        *((uint16_t*)B) =(uint16_t)( (x & 0xff) |((x1&0xff) <<8));
+        B-=offset;
+        *((uint16_t*)(B)) = (uint16_t)(((x & 0xff00) |((x1&0xff00) <<8))>>8);
+        B-=offset;
+        *((uint16_t*)(B)) = (uint16_t)(((x & 0xff0000) |((x1&0xff0000) <<8))>>16);
+        B-=offset;
+        *((uint16_t*)(B)) = (uint16_t)(((x & 0xff000000) >>8 |((x1&0xff000000) ))>>16);
+    */
+    
+     *((uint16_t*)(B)) = (uint16_t)(   (   (x & 0xff000000) >>24 |  (  (x1 & 0xff000000) >>16)   )  );
+    //*((uint8_t*)(B))=*((uint8_t*)(&x)+3);
+    //*((uint8_t*)(B+1))=*((uint8_t*)(&x1)+2);
+    
+    
+    
+   // B[0]= (uint16_t)(   (   (x & 0xff000000) >>24 |  (  (x1&0xff000000) >>16)   )  );
+    //B+=48;//offset;
+   *((uint16_t*)(B+48)) = (uint16_t)( ((x & 0xff0000) >>16|((x1&0xff0000) >>8)));
+   // B[48] = (uint16_t)( ((x & 0xff0000) >>16|((x1&0xff0000) >>8)));
+    //+=48;//offset;
+        *((uint16_t*)(B+2*48)) = (uint16_t)(((x & 0xff00) |((x1&0xff00) <<8))>>8);
+  // B[2*48]  = (uint16_t)(((x & 0xff00) |((x1&0xff00) <<8))>>8);
+   // B+=48;//offset;
+    *((uint16_t*)(B+3*48)) =(uint16_t)( (x & 0xff) |((x1&0xff) <<8));
+  // B[3*48] =(uint16_t)( (x & 0xff) |((x1&0xff) <<8));
+     //B+=48;//offset;
+   
+    *((uint16_t*)(B+4*48)) = (uint16_t)(((y & 0xff000000) >>8 |((y1&0xff000000) ))>>16);
+  // B[4*48]= (uint16_t)(((y & 0xff000000) >>8 |((y1&0xff000000) ))>>16);
+    
+     *((uint16_t*)(B+5*48)) = (uint16_t)(((y & 0xff0000) |((y1&0xff0000) <<8))>>16);
+ //B[5*48]=  (uint16_t)(((y & 0xff0000) |((y1&0xff0000) <<8))>>16);
+    
+    *((uint16_t*)(B+6*48)) = (uint16_t)(((y & 0xff00) |((y1&0xff00) <<8))>>8);
+ // B[6*48]=    (uint16_t)(((y & 0xff00) |((y1&0xff00) <<8))>>8);
+   
+    
+    *((uint16_t*)(B+7*48)) = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
+   //  B[7*48]  = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
+    
+    }
+    
     
 static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) {
 
@@ -604,42 +761,169 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
 }
 
-static void fillbuffer6(uint32_t *buff)
+static void fillbuffer6(uint16_t *buff)
 {
     //return;
+    //return;
+    //uint16_t *g;
+  //  g=buff;
 	Lines firstPixel[3];
+    
+    volatile CRGB * poli;
        // Lines secondPixel[3];
-		int nblines=5;
+	//	int nblines=5;
  
-  int nbpins=20;//	this->nbpins;
+//  int nbpins=20;//	this->nbpins;
   
   
    uint32_t l2=ledToDisplay;
+   // poli=int_leds+ledToDisplay;
    //Serial.println(ledToDisplay);
-	 uint32_t offset=(7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS;
-   for (int line=0;line<NUM_VIRT_PINS;line++){
+   // uint32_t offset=OFFSET;//(NUM_VIRT_PINS+1)+1-1;//(7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS+1;
+    buff+=OFFSET;
+    //uint32_t off=nun_led_per_strip*NUM_VIRT_PINS;
+   for (int line=0;line<NUM_VIRT_PINS-1;line++){
    //uint32_t l=ledToDisplay+nun_led_per_strip*line;
-     uint32_t l=l2;
+     //uint32_t l=l2;
+       poli=int_leds+l2;
 	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
  
  
-			firstPixel[0].bytes[pin] = int_leds[l].g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = int_leds[l].r/brightness_r;
-            firstPixel[2].bytes[pin] = int_leds[l].b/brightness_b;
-			l+=nun_led_per_strip*NUM_VIRT_PINS;
+            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+			//l+=nun_led_per_strip*NUM_VIRT_PINS;
+            poli+=I2S_OFF;
 
 
 			}
-			 l2+=nun_led_per_strip;
-			 
-			transpose24x1_noinline(firstPixel[0].bytes,(uint8_t*)&buff[offset],(NUM_VIRT_PINS+1)*3*4);
-        		transpose24x1_noinline(firstPixel[1].bytes,(uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);
-        		transpose24x1_noinline(firstPixel[2].bytes,(uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);		
-				offset--;
+			 l2+=NUM_LEDS_PER_STRIP;
+      // firstPixel[0].bytes[15]=0;
+       //firstPixel[1].bytes[15]=0;
+       //firstPixel[2].bytes[15]=0;
+       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
+      transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+     
+       
+     /* transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
+       transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
+       transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);
+      offset++
+      */
+       
+       /*
+       transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
+        transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
+        transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));
+       */
+       
+       buff++;
+		//if (line==NUM_VIRT_PINS-2)
+         //offset++;
 				
 		}
+ 
+    /*firstPixel[0].bytes[15]=0x00;
+    firstPixel[1].bytes[15]=0x00;
+    firstPixel[2].bytes[15]=0x00;*/
+   /* poli=int_leds+l2;
+    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+        
+        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+        
+        
+        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        poli+=nun_led_per_strip*NUM_VIRT_PINS;
+        
+        
+    }
+    l2+=nun_led_per_strip;
+    
+    
+    
+    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
+    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
+    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
+    
+    
+    
+    poli=int_leds+l2;
+   for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+        
+        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+        
+        
+        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        poli+=I2S_OFF;
+        
+        
+    }
+    //l2+=nun_led_per_strip;
+    
+    firstPixel[0].bytes[15]=255;
+    firstPixel[1].bytes[15]=255;
+    firstPixel[2].bytes[15]=255;
+   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
+    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+     l2+=NUM_LEDS_PER_STRIP;
+    
+    
+    
+    
+    buff++;
+   
+    poli=int_leds+l2;
+    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+        
+        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+        
+        
+        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        poli+=I2S_OFF;
+        
+        
+    }
+    //l2+=nun_led_per_strip;
+   firstPixel[0].bytes[15]=0;
+    firstPixel[1].bytes[15]=0;
+    firstPixel[2].bytes[15]=0;
+    
+    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
+    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+    
+   // pu3(g);
+    
+    /*
+    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
+    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
+    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
+  
+  
+    /*
+ offset++;
+   transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
+    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
+    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);*/
+    
+   /* buff++;
+    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
+    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));*/
+    
 }
 
     
