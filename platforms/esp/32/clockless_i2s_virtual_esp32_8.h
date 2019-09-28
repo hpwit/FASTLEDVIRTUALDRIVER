@@ -1,7 +1,7 @@
 /*
  * I2S Driver
  *
- * 
+ *
  */
 
 #pragma once
@@ -13,7 +13,7 @@ FASTLED_NAMESPACE_BEGIN
 #ifdef __cplusplus
 extern "C" {
 #endif
-    
+
 #include "esp_heap_caps.h"
 #include "soc/soc.h"
 #include "soc/gpio_sig_map.h"
@@ -27,7 +27,7 @@ extern "C" {
 #include "esp_log.h"
 #include <soc/rtc.h>
 
-    
+
 #ifdef __cplusplus
 }
 #endif
@@ -67,6 +67,12 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #endif
 #define OFFSET NUM_VIRT_PINS + 1
 #define I2S_OFF (NUM_VIRT_PINS + 1 )* NUM_LEDS_PER_STRIP
+#define I2S_OFF2 I2S_OFF * NBIS2SERIALPINS - NUM_LEDS_PER_STRIP
+#define AA (0x00AA00AAL)
+#define CC (0x0000CCCCL)
+#define FF (0xF0F0F0F0L)
+#define FF2 (0x0F0F0F0FL)
+
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
@@ -118,10 +124,10 @@ static int CLOCK_DIVIDER_N;
 static int CLOCK_DIVIDER_A;
 static int CLOCK_DIVIDER_B;
 static int dmaBufferActive;
-	
+
 	static volatile bool stopSignal;
  static volatile bool runningPixel=false;
-	
+
 	  //CRGB  pixelg[8][5]; //volatile uint8_t pixelg[8][5];
 	   //uint8_t pixelg[16][8][4] ;
 	//volatile uint8_t pixelr[8][5];
@@ -131,13 +137,13 @@ static int dmaBufferActive;
  static  int dmaBufferCount=2; //we use two buffers
    /* typedef union {
         uint8_t bytes[16];
-        uint16_t shorts[8]; 
+        uint16_t shorts[8];
         uint32_t raw[2];
     } Lines;*/
-	
+
 	typedef union {
         uint8_t bytes[16];
-        uint32_t shorts[8]; 
+        uint32_t shorts[8];
         uint32_t raw[2];
     } Lines;
   static volatile  int num_strips;
@@ -155,7 +161,7 @@ static int dmaBufferActive;
 template<int *Pins,int CLOCK_PIN,int LATCH_PIN, EOrder RGB_ORDER = GRB>
 class ClocklessController : public CPixelLEDController<RGB_ORDER>
 {
-   
+
   //int *Pins;
    	const int deviceBaseIndex[2] = {I2S0O_DATA_OUT0_IDX, I2S1O_DATA_OUT0_IDX};
 	const int deviceClockIndex[2] = {I2S0O_BCK_OUT_IDX, I2S1O_BCK_OUT_IDX};
@@ -166,10 +172,10 @@ public:
     void init()
     {
        // brigthness=10;
-		
+
      //Serial.printf("%d %d %d\n",CLOCK_PIN,LATCH_PIN,NUM_LED_PER_STRIP);
 
-        
+
 	  for (int i = 0; i < NBIS2SERIALPINS; i++)
 		if (Pins[i] > -1)
 		{
@@ -178,7 +184,7 @@ public:
      pinMode(Pins[i],OUTPUT);
 			gpio_matrix_out(Pins[i], deviceBaseIndex[I2S_DEVICE] + i+8, false, false);
 		}
-		
+
 		//latch pin
 		PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[LATCH_PIN], PIN_FUNC_GPIO);
 			gpio_set_direction((gpio_num_t)LATCH_PIN, (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
@@ -189,22 +195,22 @@ public:
 		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
        // gpio_matrix_out(26, deviceWordSelectIndex[I2S_DEVICE], false, false);
        i2sInit();
-      
+
     }
-    
+
     virtual uint16_t getMaxRefreshRate() const { return 800; }
-    
+
 protected:
-   
-  
-    
+
+
+
     static DMABuffer * allocateDMABuffer(int bytes)
     {
         DMABuffer * b = (DMABuffer *)heap_caps_malloc(sizeof(DMABuffer), MALLOC_CAP_DMA);
-        
+
         b->buffer = (uint8_t *)heap_caps_malloc(bytes, MALLOC_CAP_DMA);
         memset(b->buffer, 0, bytes);
-        
+
         b->descriptor.length = bytes;
         b->descriptor.size = bytes;
         b->descriptor.owner = 1;
@@ -214,18 +220,18 @@ protected:
         b->descriptor.empty = 0;
         b->descriptor.eof = 1;
         b->descriptor.qe.stqe_next = 0;
-        
+
         return b;
     }
-    
+
     static void i2sInit()
     {
         // -- Only need to do this once
        // if (gInitialized) return;
-        
+
         // -- Construct the bit patterns for ones and zeros
      //   initBitPatterns();
-        
+
         // -- Choose whether to use I2S device 0 or device 1
         //    Set up the various device-specific parameters
         int interruptSource;
@@ -240,12 +246,12 @@ protected:
             interruptSource = ETS_I2S1_INTR_SOURCE;
             i2s_base_pin_index = I2S1O_DATA_OUT0_IDX;
         }
-        
+
         // -- Reset everything
         i2sReset();
         i2sReset_DMA();
         i2sReset_FIFO();
-        
+
         // -- Main configuration
        // i2s->conf.tx_msb_right = 1;
         //i2s->conf.tx_mono = 0;
@@ -253,52 +259,52 @@ protected:
         //i2s->conf.tx_msb_shift = 0;
         i2s->conf.tx_right_first = 0; // 0;//1;
         //i2s->conf.tx_slave_mod = 0;
-        
+
         // -- Set parallel mode
         i2s->conf2.val = 0;
         i2s->conf2.lcd_en = 1;
         i2s->conf2.lcd_tx_wrx2_en = 1; // 0 for 16 or 32 parallel output
         i2s->conf2.lcd_tx_sdx2_en = 0; // HN
-        
+
         // -- Set up the clock rate and sampling
         i2s->sample_rate_conf.val = 0;
         i2s->sample_rate_conf.tx_bits_mod = 16; // Number of parallel bits/pins
         i2s->sample_rate_conf.tx_bck_div_num = 1;
         i2s->clkm_conf.val = 0;
         i2s->clkm_conf.clka_en = 1;
-        
+
 		//rtc_clk_apll_enable(true, 215, 163,4, 1); //14.4Mhz 5pins +1 latch
         //rtc_clk_apll_enable(true, 123, 20,6, 1); //16.8Mhz 6 pins +1 latchtch
         //rtc_clk_apll_enable(true, 164, 112,9, 2); //16.8Mhz 6 pins +1 latchtch
         rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
-        
+
         // -- Data clock is computed as Base/(div_num + (div_b/div_a))
         //    Base is 80Mhz, so 80/(10 + 0/1) = 8Mhz
         //    One cycle is 125ns
         i2s->clkm_conf.clkm_div_a =1;// CLOCK_DIVIDER_A;
         i2s->clkm_conf.clkm_div_b = 0;//CLOCK_DIVIDER_B;
         i2s->clkm_conf.clkm_div_num = 1;//CLOCK_DIVIDER_N;
-        
+
         i2s->fifo_conf.val = 0;
         i2s->fifo_conf.tx_fifo_mod_force_en = 1;
         i2s->fifo_conf.tx_fifo_mod = 1;  // 16-bit single channel data
         i2s->fifo_conf.tx_data_num = 32;//32; // fifo length
         i2s->fifo_conf.dscr_en = 1;      // fifo will use dma
-        
+
         i2s->conf1.val = 0;
         i2s->conf1.tx_stop_en = 0;
         i2s->conf1.tx_pcm_bypass = 1;
-        
+
         i2s->conf_chan.val = 0;
         i2s->conf_chan.tx_chan_mod = 1; // Mono mode, with tx_msb_right = 1, everything goes to right-channel
-        
+
         i2s->timing.val = 0;
-        
+
         // -- Allocate two DMA buffers
         dmaBuffers[0] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*2);
         dmaBuffers[1] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*2);
         dmaBuffers[2] = allocateDMABuffer((NUM_VIRT_PINS+1)*3*8*3*2);
-		
+
         // -- Arrange them as a circularly linked list
         dmaBuffers[0]->descriptor.qe.stqe_next = &(dmaBuffers[1]->descriptor);
         dmaBuffers[1]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
@@ -307,12 +313,12 @@ protected:
 		//pu((uint32_t*)this->dmaBuffers[2]->buffer);
 		pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
 		pu2((uint16_t*)dmaBuffers[1]->buffer);
-	   
+
         // -- Allocate i2s interrupt
         SET_PERI_REG_BITS(I2S_INT_ENA_REG(I2S_DEVICE), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
         esp_err_t e = esp_intr_alloc(interruptSource, 0, // ESP_INTR_FLAG_INTRDISABLED | ESP_INTR_FLAG_LEVEL3,
                                      &interruptHandler, 0, &gI2S_intr_handle);
-        
+
         // -- Create a semaphore to block execution until all the controllers are done
        /* if (gTX_sem == NULL) {
             gTX_sem = xSemaphoreCreateBinary();
@@ -322,8 +328,8 @@ protected:
         // Serial.println("Init I2S");
         gInitialized = true;
     }
-    
-	
+
+
     static void pu(uint16_t* buff)
     {
         memset((uint8_t*)buff,0,(NUM_VIRT_PINS+1)*8*3*3*2);
@@ -342,11 +348,11 @@ protected:
             //buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)]=0x02;
         }
     }
-        
+
        static  void pu2(uint16_t* buff)
         {
-            
-            
+
+
             for (int j=0;j<24;j++)
             {
                 // for (int i=0;i<NUM_VIRT_PINS;i++)
@@ -371,7 +377,7 @@ protected:
                 //buff+=3*(NUM_VIRT_PINS+1)-NUM_VIRT_PINS; //13
             }
         }
-	
+
     /** Clear DMA buffer
      *
      *  Yves' clever trick: initialize the bits that we know must be 0
@@ -384,23 +390,23 @@ protected:
             int offset=gPulsesPerBit*i;
             for(int j=0;j<ones_for_zero;j++)
                 buf[offset+j]=0xffffffff;
-            
+
             for(int j=ones_for_one;j<gPulsesPerBit;j++)
                 buf[offset+j]=0;
         }
     }
-    
+
     // -- Show pixels
     //    This is the main entry point for the controller.
     virtual void showPixels(PixelController<RGB_ORDER> & pixels)
     {
-        
+
 		//Serial.println("Show");
 			int_leds=(CRGB*)pixels.mData;
 			m_scale=pixels.mScale;
         nun_led_per_strip=  pixels.mLen;
 			//Serial.printf("led - r:%d v:%d b%d\n",m_scale.r,m_scale.g,m_scale.b);
-			
+
 			 brightness_b=256/(m_scale.b+1);
 			  brightness_r=256/(m_scale.r+1);
 			 brightness_g=256/(m_scale.g+1);
@@ -410,7 +416,7 @@ protected:
 		//	}
                 ledToDisplay=0;
         stopSignal=false;
- 	
+
 		pu((uint16_t*)dmaBuffers[0]->buffer); //latch
 		pu((uint16_t*)dmaBuffers[1]->buffer);
 		pu((uint16_t*)dmaBuffers[2]->buffer);
@@ -439,15 +445,15 @@ protected:
         delayMicroseconds(50);
 
     }
-    
+
     // -- Custom interrupt handler
     static IRAM_ATTR void interruptHandler(void *arg)
     {
-	
+
 	/*
         if (i2s->int_st.out_eof) {
             i2s->int_clr.val = i2s->int_raw.val;
-            
+
             if ( ! gDoneFilling) {
                 fillBuffer6();
             } else {
@@ -456,13 +462,13 @@ protected:
                 if(HPTaskAwoken == pdTRUE) portYIELD_FROM_ISR();
             }
         }*/
-		
+
         //Lines pixel[3];
 		 if (!i2s->int_st.out_eof)
 		 return;
          i2s->int_clr.val = i2s->int_raw.val;
-       
-        
+
+
         if(stopSignal)
         {
            // Serial.println("stop");
@@ -472,17 +478,17 @@ protected:
         }
         if(ledToDisplay<=NUM_LEDS_PER_STRIP)
         {
-            
-            
-            
-            
-            
-			
+
+
+
+
+
+
 			if(ledToDisplay==NUM_LEDS_PER_STRIP)
 			{
 				pu( (uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
 
-                
+
                 /*i2sStop();
                 runningPixel=false;
                 return;*/
@@ -502,73 +508,73 @@ protected:
                 stopSignal=true;
         }
     }
-    
+
     static void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
     {
         uint32_t x, y, t;
-        
+
         // Load the array and pack it into x and y.
-        
+
        // x = (A[7]<<24)   | (A[6]<<16)   | (A[5]<<8) | A[4];//(A[0]<<24)   | (A[m]<<16)   | (A[2*m]<<8) | A[3*m];
         //y = *(uint16_t*)(A);//(A[3]<<12) | (A[2]<<8) | (A[1]<<4) | A[0];//(A[4*m]<<24) | (A[5*m]<<16) | (A[6*m]<<8) | A[7*m];
-        
-        
+
+
         x = (A[0]<<24)   | (A[m]<<16)   | (A[2*m]<<8) | A[3*m];
         y = (A[4*m]<<24) | (A[5*m]<<16) | (A[6*m]<<8) | A[7*m];
-        
+
         t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
        t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
-        
+
         t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
         t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
-        
+
         t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
         y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
         x = t;
-        
+
         B[0]=x>>24;    B[n]=x>>16;    B[2*n]=x>>8;  B[3*n]=x;
         B[4*n]=y>>24;  B[5*n]=y>>16;  B[6*n]=y>>8;  B[7*n]=y;
     }
-    
-    
-    
-    
+
+
+
+
 static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
         uint32_t  x, y, x1,y1,t;
-        
-        
-        
+
+
+
         y = *(unsigned int*)(A);
         x = *(unsigned int*)(A+4);
         y1 = *(unsigned int*)(A+8);
     //x1=0;
      x1 = *(unsigned int*)(A+12);
-        
-    
-        
-        
+
+
+
+
         // pre-transform x
-        t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
-        t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
-       t = (x1 ^ (x1 >> 7)) & 0x00AA00AA;  x1 = x1 ^ t ^ (t << 7);
-       t = (x1 ^ (x1 >>14)) & 0x0000CCCC;  x1 = x1 ^ t ^ (t <<14);
+        t = (x ^ (x >> 7)) & AA;  x = x ^ t ^ (t << 7);
+        t = (x ^ (x >>14)) & CC;  x = x ^ t ^ (t <<14);
+       t = (x1 ^ (x1 >> 7)) & AA;  x1 = x1 ^ t ^ (t << 7);
+       t = (x1 ^ (x1 >>14)) & CC;  x1 = x1 ^ t ^ (t <<14);
         // pre-transform y
-        t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
-        t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
-        t = (y1 ^ (y1 >> 7)) & 0x00AA00AA;  y1 = y1 ^ t ^ (t << 7);
-        t = (y1 ^ (y1 >>14)) & 0x0000CCCC;  y1 = y1 ^ t ^ (t <<14);
-        
-   
+        t = (y ^ (y >> 7)) & AA;  y = y ^ t ^ (t << 7);
+        t = (y ^ (y >>14)) & CC;  y = y ^ t ^ (t <<14);
+        t = (y1 ^ (y1 >> 7)) & AA;  y1 = y1 ^ t ^ (t << 7);
+        t = (y1 ^ (y1 >>14)) & CC;  y1 = y1 ^ t ^ (t <<14);
+
+
         // final transform
-        t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
-        y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
+        t = (x & FF) | ((y >> 4) & FF2);
+        y = ((x << 4) & FF) | (y & FF2);
         x = t;
-        
-        t= (x1 & 0xF0F0F0F0) | ((y1 >> 4) & 0x0F0F0F0F);
-        y1 = ((x1 << 4) & 0xF0F0F0F0) | (y1 & 0x0F0F0F0F);
+
+        t= (x1 & FF) | ((y1 >> 4) & FF2);
+        y1 = ((x1 << 4) & FF) | (y1 & FF2);
         x1 = t;
-        
-        
+
+
     /*
         *((uint16_t*)B) = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
         B-=offset;
@@ -587,13 +593,14 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
         B-=offset;
         *((uint16_t*)(B)) = (uint16_t)(((x & 0xff000000) >>8 |((x1&0xff000000) ))>>16);
     */
-    
-     *((uint16_t*)(B)) = (uint16_t)(   (   (x & 0xff000000) >>24 |  (  (x1 & 0xff000000) >>16)   )  );
+
+    // *((uint16_t*)(B)) = (uint16_t)(   (   (x & 0xff000000) >>24 |  (  (x1 & 0xff000000) >>16)   )  );
+     *((uint16_t*)(B+4*48)) = (uint16_t)(((x & 0xff000000) >>8 |((x1&0xff000000) ))>>16);
     //*((uint8_t*)(B))=*((uint8_t*)(&x)+3);
     //*((uint8_t*)(B+1))=*((uint8_t*)(&x1)+2);
-    
-    
-    
+
+
+
    // B[0]= (uint16_t)(   (   (x & 0xff000000) >>24 |  (  (x1&0xff000000) >>16)   )  );
     //B+=48;//offset;
    *((uint16_t*)(B+48)) = (uint16_t)( ((x & 0xff0000) >>16|((x1&0xff0000) >>8)));
@@ -605,28 +612,31 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
     *((uint16_t*)(B+3*48)) =(uint16_t)( (x & 0xff) |((x1&0xff) <<8));
   // B[3*48] =(uint16_t)( (x & 0xff) |((x1&0xff) <<8));
      //B+=48;//offset;
-   
+
+
     *((uint16_t*)(B+4*48)) = (uint16_t)(((y & 0xff000000) >>8 |((y1&0xff000000) ))>>16);
   // B[4*48]= (uint16_t)(((y & 0xff000000) >>8 |((y1&0xff000000) ))>>16);
-    
-     *((uint16_t*)(B+5*48)) = (uint16_t)(((y & 0xff0000) |((y1&0xff0000) <<8))>>16);
- //B[5*48]=  (uint16_t)(((y & 0xff0000) |((y1&0xff0000) <<8))>>16);
-    
+
+   *((uint16_t*)(B+5*48)) = (uint16_t)(((y & 0xff0000) |((y1&0xff0000) <<8))>>16);
+
+
     *((uint16_t*)(B+6*48)) = (uint16_t)(((y & 0xff00) |((y1&0xff00) <<8))>>8);
+  //  *((uint16_t*)(B+6*48)) = (uint16_t)(( ((y & 0xff00)>>8) |((y1&0xff00) )));
+
  // B[6*48]=    (uint16_t)(((y & 0xff00) |((y1&0xff00) <<8))>>8);
-   
-    
+
+
     *((uint16_t*)(B+7*48)) = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
    //  B[7*48]  = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
-    
+
     }
-    
-    
+
+
 static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) {
 
     uint32_t  x, y, x1,y1,t,x2,y2;
 
-    
+
 
     // Load the array and pack it into x and y.
 
@@ -640,9 +650,9 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     //printf("%d\n",*(unsigned int*)(A+4));
 
-    
 
-    
+
+
 
     y = *(unsigned int*)(A);
 
@@ -652,15 +662,15 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     x1 = *(unsigned int*)(A+12);
 
-    
+
 
     y2 = *(unsigned int*)(A+16);
 
     x2 = *(unsigned int*)(A+20);
 
-    
 
-    
+
+
 
     // pre-transform x
 
@@ -668,19 +678,19 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
 
-    
+
 
     t = (x1 ^ (x1 >> 7)) & 0x00AA00AA;  x1 = x1 ^ t ^ (t << 7);
 
     t = (x1 ^ (x1 >>14)) & 0x0000CCCC;  x1 = x1 ^ t ^ (t <<14);
 
-    
+
 
     t = (x2 ^ (x2 >> 7)) & 0x00AA00AA;  x2 = x2 ^ t ^ (t << 7);
 
     t = (x2 ^ (x2 >>14)) & 0x0000CCCC;  x2 = x2 ^ t ^ (t <<14);
 
-    
+
 
     // pre-transform y
 
@@ -688,19 +698,19 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
 
-    
+
 
     t = (y1 ^ (y1 >> 7)) & 0x00AA00AA;  y1 = y1 ^ t ^ (t << 7);
 
     t = (y1 ^ (y1 >>14)) & 0x0000CCCC;  y1 = y1 ^ t ^ (t <<14);
 
-    
+
 
     t = (y2 ^ (y2 >> 7)) & 0x00AA00AA;  y2 = y2 ^ t ^ (t << 7);
 
     t = (y2 ^ (y2 >>14)) & 0x0000CCCC;  y2 = y2 ^ t ^ (t <<14);
 
-    
+
 
     // final transform
 
@@ -710,7 +720,7 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     x = t;
 
-    
+
 
     t = (x1 & 0xF0F0F0F0) | ((y1 >> 4) & 0x0F0F0F0F);
 
@@ -718,7 +728,7 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     x1 = t;
 
-    
+
 
     t = (x2 & 0xF0F0F0F0) | ((y2 >> 4) & 0x0F0F0F0F);
 
@@ -726,11 +736,11 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     x2 = t;
 
-    
 
-    
 
-    
+
+
+
 
     *((uint32_t*)B) = (uint32_t)(((y & 0xff) |  (  (y1 & 0xff) << 8 )  |  (  (y2 & 0xff) << 16 ))<<8 )&0xfffff00   ;
 	B-=offset;
@@ -744,7 +754,7 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
     *((uint32_t*)(B)) = (uint32_t)(((y & 0xff000000) >>16 |((y1&0xff000000)>>8 ) |((y2&0xff000000) )  ))&0xfffff00;
 	B-=offset;
 
-    
+
 
     *((uint32_t*)B) =(uint32_t)(( (x & 0xff) |((x1&0xff) <<8)  |((x2&0xff) <<16))<<8 )&0xfffff00;
 	B-=offset;
@@ -757,7 +767,7 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
     *((uint32_t*)(B)) = (uint32_t)(((x & 0xff000000) >>16 |((x1&0xff000000)>>8 )    |((x2&0xff000000) )    ))&0xfffff00;
 
-    
+
 
 }
 
@@ -768,29 +778,30 @@ static void fillbuffer6(uint16_t *buff)
     //uint16_t *g;
   //  g=buff;
 	Lines firstPixel[3];
-    
+
     volatile CRGB * poli;
        // Lines secondPixel[3];
 	//	int nblines=5;
- 
+
 //  int nbpins=20;//	this->nbpins;
-  
-  
-   uint32_t l2=ledToDisplay;
+
+
+  // uint32_t l2=ledToDisplay;
    // poli=int_leds+ledToDisplay;
    //Serial.println(ledToDisplay);
    // uint32_t offset=OFFSET;//(NUM_VIRT_PINS+1)+1-1;//(7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS+1;
     buff+=OFFSET;
+    poli=int_leds+ledToDisplay;
     //uint32_t off=nun_led_per_strip*NUM_VIRT_PINS;
    for (int line=0;line<NUM_VIRT_PINS-1;line++){
    //uint32_t l=ledToDisplay+nun_led_per_strip*line;
      //uint32_t l=l2;
-       poli=int_leds+l2;
+       //poli=int_leds+l2;
 	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
- 
- 
+
+
             firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
             firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
             firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
@@ -799,134 +810,135 @@ static void fillbuffer6(uint16_t *buff)
 
 
 			}
-			 l2+=NUM_LEDS_PER_STRIP;
+			 //l2+=NUM_LEDS_PER_STRIP;
+       poli-=I2S_OFF2;
       // firstPixel[0].bytes[15]=0;
        //firstPixel[1].bytes[15]=0;
        //firstPixel[2].bytes[15]=0;
        			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-     
-       
+
+
      /* transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
        transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
        transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);
       offset++
       */
-       
+
        /*
        transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
         transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
         transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));
        */
-       
+
        buff++;
 		//if (line==NUM_VIRT_PINS-2)
          //offset++;
-				
+
 		}
- 
+
     /*firstPixel[0].bytes[15]=0x00;
     firstPixel[1].bytes[15]=0x00;
     firstPixel[2].bytes[15]=0x00;*/
    /* poli=int_leds+l2;
     for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-        
+
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-        
-        
+
+
         firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
         firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=nun_led_per_strip*NUM_VIRT_PINS;
-        
-        
+
+
     }
     l2+=nun_led_per_strip;
-    
-    
-    
+
+
+
     transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
     transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
     transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
-    
-    
-    
-    poli=int_leds+l2;
+
+
+
+   // poli=int_leds+l2;
    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-        
+
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-        
-        
+
+
         firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
         firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
-        
-        
+
+
     }
     //l2+=nun_led_per_strip;
-    
+
     firstPixel[0].bytes[15]=255;
     firstPixel[1].bytes[15]=255;
     firstPixel[2].bytes[15]=255;
    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-     l2+=NUM_LEDS_PER_STRIP;
-    
-    
-    
-    
+     //l2+=NUM_LEDS_PER_STRIP;
+    poli-=I2S_OFF2;
+
+
+
     buff++;
-   
-    poli=int_leds+l2;
+
+    //poli=int_leds+l2;
     for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-        
+
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-        
-        
+
+
         firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
         firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
-        
-        
+
+
     }
     //l2+=nun_led_per_strip;
    firstPixel[0].bytes[15]=0;
     firstPixel[1].bytes[15]=0;
     firstPixel[2].bytes[15]=0;
-    
+
     transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-    
+
    // pu3(g);
-    
+
     /*
     transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
     transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
     transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
-  
-  
+
+
     /*
  offset++;
    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
     transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
     transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);*/
-    
+
    /* buff++;
     transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));*/
-    
+
 }
 
-    
+
     /** Start I2S transmission
      */
     static void i2sStart()
@@ -950,35 +962,35 @@ static void fillbuffer6(uint16_t *buff)
         // //vTaskDelay(5);
         i2s->int_ena.val = 0;
         i2s->int_ena.out_eof = 1;
-        
+
         //start transmission
         i2s->conf.tx_start = 1;
     }
-    
+
     static void i2sReset()
     {
         // Serial.println("I2S reset");
         const unsigned long lc_conf_reset_flags = I2S_IN_RST_M | I2S_OUT_RST_M | I2S_AHBM_RST_M | I2S_AHBM_FIFO_RST_M;
         i2s->lc_conf.val |= lc_conf_reset_flags;
         i2s->lc_conf.val &= ~lc_conf_reset_flags;
-        
+
         const uint32_t conf_reset_flags = I2S_RX_RESET_M | I2S_RX_FIFO_RESET_M | I2S_TX_RESET_M | I2S_TX_FIFO_RESET_M;
         i2s->conf.val |= conf_reset_flags;
         i2s->conf.val &= ~conf_reset_flags;
     }
-    
+
     static void i2sReset_DMA()
     {
         i2s->lc_conf.in_rst=1; i2s->lc_conf.in_rst=0;
         i2s->lc_conf.out_rst=1; i2s->lc_conf.out_rst=0;
     }
-    
+
     static void i2sReset_FIFO()
     {
         i2s->conf.rx_fifo_reset=1; i2s->conf.rx_fifo_reset=0;
         i2s->conf.tx_fifo_reset=1; i2s->conf.tx_fifo_reset=0;
     }
-    
+
     static void i2sStop()
     {
         // Serial.println("I2S stop");
