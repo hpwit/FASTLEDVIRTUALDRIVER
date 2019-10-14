@@ -273,6 +273,7 @@ protected:
         i2s->clkm_conf.val = 0;
         i2s->clkm_conf.clka_en = 1;
 
+//rtc_clk_apll_enable(true, 215, 163,1, 20);
 		//rtc_clk_apll_enable(true, 215, 163,4, 1); //14.4Mhz 5pins +1 latch
         //rtc_clk_apll_enable(true, 123, 20,6, 1); //16.8Mhz 6 pins +1 latchtch
         //rtc_clk_apll_enable(true, 164, 112,9, 2); //16.8Mhz 6 pins +1 latchtch

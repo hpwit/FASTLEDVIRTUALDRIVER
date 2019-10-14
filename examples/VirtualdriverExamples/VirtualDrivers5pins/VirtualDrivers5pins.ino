@@ -24,23 +24,23 @@ CRGB leds[NUM_LEDS];
 int Pins[NBIS2SERIALPINS]={13,14,26,25,33,32,15,18};
 
 void setup() {
-Serial.begin(115200);
-/*
-* Define the esp pins you are using
-* pin 13 will drive strip 1->5
-* pin 14 will drive strip 6->10
-* pin 26 will drive strip 11->15
-* pin 25 will drive strip 16->20
-* pin 33 will drive stip 21->25
-* pin 32 will drive strip 26->30
-* pin 15 will drive strip 31->35
-* pin 18 will drive strip 36->40
-*/
+    Serial.begin(115200);
+    /*
+    * Define the esp pins you are using
+    * pin 13 will drive strip 1->5
+    * pin 14 will drive strip 6->10
+    * pin 26 will drive strip 11->15
+    * pin 25 will drive strip 16->20
+    * pin 33 will drive stip 21->25
+    * pin 32 will drive strip 26->30
+    * pin 15 will drive strip 31->35
+    * pin 18 will drive strip 36->40
+    */
 
 
 
-FastLED.addLeds<VIRTUAL_DRIVER,Pins,CLOCK_PIN, LATCH_PIN>(leds,NUM_LEDS_PER_STRIP);
-FastLED.setBrightness(64);
+    FastLED.addLeds<VIRTUAL_DRIVER,Pins,CLOCK_PIN, LATCH_PIN>(leds,NUM_LEDS_PER_STRIP);
+    FastLED.setBrightness(64);
 
 }
 int start=0;
