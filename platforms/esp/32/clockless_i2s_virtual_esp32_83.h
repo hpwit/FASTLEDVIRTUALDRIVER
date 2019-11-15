@@ -75,21 +75,8 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define FF (0xF0F0F0F0L)
 #define FF2 (0x0F0F0F0FL)
 
-#ifndef RGB_ORDER
-	#define RGB_ORDER GRB
-#endif
 
-#if RGB_ORDER = GRB
-	#define C_G 0
-	#define C_R 1
-	#define C_B 2
-#endif
 
-#if RGB_ORDER = RGB
-	#define C_R 0
-	#define C_G 1
-	#define C_B 2
-#endif
 
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
@@ -108,7 +95,7 @@ static intr_handle_t gI2S_intr_handle = NULL;
 
 // -- A pointer to the memory-mapped structure: I2S0 or I2S1
 static i2s_dev_t * i2s;
-
+static byte C_G,C_R,C_B;
 // -- I2S goes to these pins until we remap them using the GPIO matrix
 static int i2s_base_pin_index;
 
@@ -211,6 +198,20 @@ public:
 	//if (baseClock > -1)
 	//clock pin
 		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
+        /*
+        RGB=0012,
+        RBG=0021,
+        GRB=0102,
+        GBR=0120,
+        BRG=0201,
+        BGR=0210
+         */
+        C_R=(byte)(RGB_ORDER/64);
+        C_G=(byte)((RGB_ORDER-C_R*64)/8);
+        C_B=(byte)(RGB_ORDER-C_R*64-C_G*8);
+        
+        //Serial.printf(" color %d %d %d\n",C_R,C_B,C_G);
+        
        // gpio_matrix_out(26, deviceWordSelectIndex[I2S_DEVICE], false, false);
        i2sInit();
 
@@ -821,7 +822,7 @@ static void fillbuffer6(uint16_t *buff)
         
         
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
@@ -847,7 +848,7 @@ static void fillbuffer6(uint16_t *buff)
         
         
          firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
@@ -881,7 +882,7 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
@@ -909,7 +910,7 @@ static void fillbuffer6(uint16_t *buff)
 
 
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
@@ -935,7 +936,7 @@ static void fillbuffer6(uint16_t *buff)
 
 
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
@@ -960,7 +961,7 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
@@ -985,7 +986,7 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
@@ -1010,7 +1011,7 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
         firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;

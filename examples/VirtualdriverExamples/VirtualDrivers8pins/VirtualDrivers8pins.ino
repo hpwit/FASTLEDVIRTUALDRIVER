@@ -1,10 +1,10 @@
 #define ESP32_VIRTUAL_DRIVER true //To enable virtual pin driver for esp32
 #define ESP_VIRTUAL_DRIVER_8 1 //to use the 8:1 ratio
-#define NBIS2SERIALPINS 8
+#define NBIS2SERIALPINS 7 //number of esp32 pins you will use. the total number of strips available will be NBIS2SERIALPINS * 8 here 56 strips
 #define NUM_LEDS_PER_STRIP 256 //the length of your strip if you have different strips size put here the longuest strip
 
 /*
-This needs to be declared before #include "FastLed.h"
+the lines above  needs to be declared before #include "FastLed.h"
 NBIS2SERIALPINS represents the number of pins used by the esp value, it ranges from 1->15
 NUM_LEDS_PER_STRIP the length of your strip if you have different strips size put here the longuest strip
 for each pin you would be able to drive 8 virtuals pins
@@ -16,14 +16,22 @@ if you want to drive 63 pins you would need #define NBIS2SERIALPINS 8
 if you want to drive 17 pins you would need #define NBIS2SERIALPINS 3
 
 ATTENTION : compare to the other drivers the order of the strip ot of the 74HC595 is mixed
-Q0/PIN 15 => VIRTUAL PIN 7
-Q1/PIN 1  => VIRTUAL PIN 8
-Q2/PIN 2  => VIRTUAL PIN 5
-Q3/PIN 3  => VIRTUAL PIN 6
-Q4/PIN 4  => VIRTUAL PIN 3
-Q5/PIN 5  => VIRTUAL PIN 4
-Q6/PIN 6  => VIRTUAL PIN 1
-Q7/PIN 7  => VIRTUAL PIN 2
+Q0/PIN 15 => VIRTUAL PIN 8
+Q1/PIN 1  => VIRTUAL PIN 7
+Q2/PIN 2  => VIRTUAL PIN 6
+Q3/PIN 3  => VIRTUAL PIN 5
+Q4/PIN 4  => VIRTUAL PIN 4
+Q5/PIN 5  => VIRTUAL PIN 3
+Q6/PIN 6  => VIRTUAL PIN 2
+Q7/PIN 7  => VIRTUAL PIN 1
+
+
+
+advice if you want to drive more than 88 strips hence NBIS2SERIALPINS>11
+i would advice to add :
+    #define STATIC_COLOR_GRB 1      for GRB strips
+    #define STATIC_COLOR_RGB 1      for RGB strips
+this will pre compute the color order and avoid possible hickups
 
 */
 #include "FastLED.h"
@@ -35,25 +43,27 @@ Q7/PIN 7  => VIRTUAL PIN 2
 #define NUM_LEDS NUM_LEDS_PER_STRIP * NUM_STRIPS
 CRGB leds[NUM_LEDS];
 
-int Pins[NBIS2SERIALPINS]={12,14,26,25,33,32,15,18};
+int Pins[NBIS2SERIALPINS]={12,14,26,25,33,32,15};
+/*
+* Define the esp pins you are using
+* pin 12 will drive strip 1->8
+* pin 14 will drive strip 9->16
+* pin 26 will drive strip 17->24
+* pin 25 will drive strip 25->32
+* pin 33 will drive stip  33->40
+* pin 32 will drive strip 41->48
+* pin 15 will drive strip 49->56
+
+*/
 
 void setup() {
     Serial.begin(115200);
-    /*
-    * Define the esp pins you are using
-    * pin 12 will drive strip 1->8
-    * pin 14 will drive strip 9->16
-    * pin 26 will drive strip 17->24
-    * pin 25 will drive strip 25->32
-    * pin 33 will drive stip  33->40
-    * pin 32 will drive strip 41->48
-    * pin 15 will drive strip 49->56
-    * pin 18 will drive strip 57->64
-    */
+
 
 
 
     FastLED.addLeds<VIRTUAL_DRIVER,Pins,CLOCK_PIN, LATCH_PIN>(leds,NUM_LEDS_PER_STRIP);
+    //FastLED.addLeds<VIRTUAL_DRIVER,Pins,CLOCK_PIN, LATCH_PIN,GRB>(leds,NUM_LEDS_PER_STRIP); //to set color order by default GRB
     FastLED.setBrightness(64);
 
 }

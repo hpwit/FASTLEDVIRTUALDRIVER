@@ -81,7 +81,7 @@ static int gNumStarted = 0;
 // -- Global semaphore for the whole show process
 //    Semaphore is not given until all data has been sent
 static xSemaphoreHandle gTX_sem = NULL;
-
+static byte C_G,C_R,C_B;
 // -- One-time I2S initialization
 static bool gInitialized = false;
 
@@ -193,6 +193,9 @@ public:
 	//if (baseClock > -1)
 	//clock pin
 		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
+        C_R=(byte)(RGB_ORDER/64);
+        C_G=(byte)((RGB_ORDER-C_R*64)/8);
+        C_B=(byte)(RGB_ORDER-C_R*64-C_G*8);
        // gpio_matrix_out(26, deviceWordSelectIndex[I2S_DEVICE], false, false);
        i2sInit();
 
@@ -801,9 +804,9 @@ static void fillbuffer6(uint16_t *buff)
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
         
         
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
         
@@ -829,9 +832,9 @@ static void fillbuffer6(uint16_t *buff)
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
         
         
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
         
@@ -864,9 +867,9 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
 
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+            firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+            firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
+            firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 

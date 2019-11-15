@@ -408,6 +408,13 @@ switch(CHIPSET) {
 			case VIRTUAL_DRIVER: {static ClocklessController<Pins,CLOCK_PIN,LATCH_PIN, GRB> controller; return  addLeds(&controller, data, nLedsOrOffset, nLedsIfOffset); }
 			}
 }
+    
+    template<EBlockChipsets CHIPSET,int *Pins,int CLOCK_PIN,int LATCH_PIN,EOrder RGB_ORDER>
+    static CLEDController &addLeds(struct CRGB *data, int nLedsOrOffset, int nLedsIfOffset = 0) {
+        switch(CHIPSET) {
+            case VIRTUAL_DRIVER: {static ClocklessController<Pins,CLOCK_PIN,LATCH_PIN, RGB_ORDER> controller; return  addLeds(&controller, data, nLedsOrOffset, nLedsIfOffset); }
+        }
+    }
 
     /*
 template<EBlockChipsets CHIPSET,int *Pins,int CLOCK_PIN,int LATCH_PIN>
