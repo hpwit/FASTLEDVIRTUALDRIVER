@@ -75,6 +75,22 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define FF (0xF0F0F0F0L)
 #define FF2 (0x0F0F0F0FL)
 
+#ifndef RGB_ORDER
+	#define NRGB_ORDER GRB
+#endif
+
+#if RGB_ORDER = GRB
+	#define C_G 0
+	#define C_R 1
+	#define C_B 2
+#endif
+
+#if RGB_ORDER = RGB
+	#define C_R 0
+	#define C_G 1
+	#define C_B 2
+#endif
+
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
@@ -804,9 +820,9 @@ static void fillbuffer6(uint16_t *buff)
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
         
         
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
         
@@ -830,9 +846,9 @@ static void fillbuffer6(uint16_t *buff)
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
         
         
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+         firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
         
@@ -864,10 +880,10 @@ static void fillbuffer6(uint16_t *buff)
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
-
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
@@ -892,9 +908,10 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
 
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
@@ -917,9 +934,10 @@ static void fillbuffer6(uint16_t *buff)
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
 
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
@@ -941,10 +959,10 @@ static void fillbuffer6(uint16_t *buff)
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
-
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
@@ -966,10 +984,10 @@ static void fillbuffer6(uint16_t *buff)
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
-
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
@@ -991,10 +1009,10 @@ static void fillbuffer6(uint16_t *buff)
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
-
-            firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_G].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+        //l+=nun_led_per_strip*NUM_VIRT_PINS;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
