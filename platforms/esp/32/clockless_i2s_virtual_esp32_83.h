@@ -76,7 +76,7 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define FF2 (0x0F0F0F0FL)
 
 #ifndef RGB_ORDER
-	#define NRGB_ORDER GRB
+	#define RGB_ORDER GRB
 #endif
 
 #if RGB_ORDER = GRB
