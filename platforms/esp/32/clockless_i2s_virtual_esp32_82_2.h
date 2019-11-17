@@ -68,28 +68,70 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define OFFSET NUM_VIRT_PINS + 1
 #define I2S_OFF (NUM_VIRT_PINS + 1 )* NUM_LEDS_PER_STRIP
 #define I2S_OFF2 I2S_OFF * NBIS2SERIALPINS - NUM_LEDS_PER_STRIP
-#define I2S_OFF3 I2S_OFF * NBIS2SERIALPINS + NUM_LEDS_PER_STRIP
-#define I2S_OFF4 I2S_OFF * NBIS2SERIALPINS -  3 * NUM_LEDS_PER_STRIP
 #define AA (0x00AA00AAL)
 #define CC (0x0000CCCCL)
 #define FF (0xF0F0F0F0L)
 #define FF2 (0x0F0F0F0FL)
 
-#ifdef STATIC_COLOR_GRB
-    #define C_G 0
-    #define C_R 1
-    #define  C_B 2
-#else
-    #ifdef STATIC_COLOR_RGB
-        #define C_G 1
-        #define C_R 0
-        #define  C_B 2
-    #else
-        static byte C_G,C_R,C_B;
-    #endif
-
+#ifndef COLOR_1
+    #define COLOR_1 CRB
 #endif
 
+#ifndef COLOR_2
+#define COLOR_2 CRB
+#endif
+
+#ifndef COLOR_3
+#define COLOR_2 CRB
+#endif
+
+#ifndef COLOR_4
+#define COLOR_4 CRB
+#endif
+
+#ifndef COLOR_5
+#define COLOR_5 CRB
+#endif
+
+#ifndef COLOR_6
+#define COLOR_6 CRB
+#endif
+
+#ifndef COLOR_7
+#define COLOR_7 CRB
+#endif
+
+#ifndef COLOR_8
+#define COLOR_8 CRB
+#endif
+
+#ifndef COLOR_8
+#define COLOR_8 CRB
+#endif
+
+#ifndef COLOR_1
+#define COLOR_1 CRB
+#endif
+
+#ifndef COLOR_1
+#define COLOR_1 CRB
+#endif
+
+#ifndef COLOR_1
+#define COLOR_1 CRB
+#endif
+
+#ifndef COLOR_1
+#define COLOR_1 CRB
+#endif
+
+#ifndef COLOR_1
+#define COLOR_1 CRB
+#endif
+
+#ifndef COLOR_1
+#define COLOR_1 CRB
+#endif
 
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
@@ -99,7 +141,7 @@ static int gNumStarted = 0;
 // -- Global semaphore for the whole show process
 //    Semaphore is not given until all data has been sent
 static xSemaphoreHandle gTX_sem = NULL;
-
+static byte C_G,C_R,C_B;
 // -- One-time I2S initialization
 static bool gInitialized = false;
 
@@ -167,13 +209,9 @@ static int dmaBufferActive;
   static volatile  int num_strips;
  static volatile  int nun_led_per_strip;
    // int *Pins;
-  static  int brightness_b;
-  static  int brightness_r;
-  static  int brightness_g;
-
-static uint8_t green_map[256];
-static uint8_t blue_map[256];
-static uint8_t red_map[256];
+  static  float brightness_b;
+  static  float brightness_r;
+  static  float brightness_g;
     static int ledType;
 	 static volatile CRGB *int_leds;
 	 static CRGB m_scale;
@@ -215,24 +253,9 @@ public:
 	//if (baseClock > -1)
 	//clock pin
 		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
-        /*
-        RGB=0012,
-        RBG=0021,
-        GRB=0102,
-        GBR=0120,
-        BRG=0201,
-        BGR=0210
-         */
-#ifndef STATIC_COLOR_GRB
-    #ifndef STATIC_COLOR_RGB
         C_R=(byte)(RGB_ORDER/64);
         C_G=(byte)((RGB_ORDER-C_R*64)/8);
         C_B=(byte)(RGB_ORDER-C_R*64-C_G*8);
-    #endif
-#endif
-        
-        //Serial.printf(" color %d %d %d\n",C_R,C_B,C_G);
-        
        // gpio_matrix_out(26, deviceWordSelectIndex[I2S_DEVICE], false, false);
        i2sInit();
 
@@ -448,18 +471,14 @@ protected:
         nun_led_per_strip=  pixels.mLen;
 			//Serial.printf("led - r:%d v:%d b%d\n",m_scale.r,m_scale.g,m_scale.b);
 
-			 
+			 brightness_b=(float)(256/(m_scale.b+1));
+			  brightness_r=(float)(256/(m_scale.r+1));
+			 brightness_g=(float)(256/(m_scale.r+1));
+        //Serial.printf("led - r:%f v:%f b%f\n",brightness_r,brightness_g,brightness_b);
 			//for(int j=0;j<50;j++)
 			//{
 				//Serial.printf("led n:%d r:%d v:%d b%d\n",j,int_leds[j].r,int_leds[j].g,int_leds[j].b);
 		//	}
-        for(int i=0;i<256;i++)
-        {
-            green_map[i]=(uint8_t)((int)(i*m_scale.g)/255);
-            blue_map[i]=(uint8_t)((int)(i*m_scale.b)/255);
-            red_map[i]=(uint8_t)((int)(i*m_scale.r)/255);
-            // Serial.printf("led -  i:%d scale:%d r:%d v:%d b:%d\n",i,m_scale.r,green_map[i],red_map[i],blue_map[i]);
-        }
                 ledToDisplay=0;
         stopSignal=false;
 
@@ -840,30 +859,31 @@ static void fillbuffer6(uint16_t *buff)
     poli=int_leds+ledToDisplay;
     //uint32_t off=nun_led_per_strip*NUM_VIRT_PINS;
     
-    //jump en deux
-	poli+=NUM_LEDS_PER_STRIP;
+    
     for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
         
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
         
         
-        firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-        firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
+       // Serial.printf("%d\n", scale8(int_leds[l].r,brightness_r));
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
         
         
     }
+    //l2+=nun_led_per_strip;
     
-	transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    //firstPixel[0].bytes[15]=255;
+    //firstPixel[1].bytes[15]=255;
+    //firstPixel[2].bytes[15]=255;
+    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-    
-
-	//on revient strip 1
-    poli-=I2S_OFF3;
+    //l2+=NUM_LEDS_PER_STRIP;
+    poli-=I2S_OFF2;
     
     
     
@@ -874,10 +894,9 @@ static void fillbuffer6(uint16_t *buff)
         //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
         
         
-        firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-        firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
         poli+=I2S_OFF;
         
@@ -892,9 +911,7 @@ static void fillbuffer6(uint16_t *buff)
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
     //l2+=NUM_LEDS_PER_STRIP;
-
-	//on va en strip 4
-    poli-=I2S_OFF4;
+    poli-=I2S_OFF2;
     
     
     
@@ -903,161 +920,148 @@ static void fillbuffer6(uint16_t *buff)
     firstPixel[1].bytes[15]=0;
     firstPixel[2].bytes[15]=0;
     
-
-   
-	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-
-	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-
-            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-            //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-			//l+=nun_led_per_strip*NUM_VIRT_PINS;
-            poli+=I2S_OFF;
-
-
-			}
-
-
-
-
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
-    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-      transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-
-	  //on va en strip3
-       poli-=I2S_OFF3;
-       buff++;
-
-
-	   
-	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-
-	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-
-            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-            //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-			//l+=nun_led_per_strip*NUM_VIRT_PINS;
-            poli+=I2S_OFF;
-
-
-			}
-
-
-
-
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
-    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-      transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-
-	  //on va en strip6
-	  poli-=I2S_OFF4;
-       buff++;
-
+   for (int line=2;line<=NUM_VIRT_PINS;line++){
+   //uint32_t l=ledToDisplay+nun_led_per_strip*line;
+     //uint32_t l=l2;
+       //poli=int_leds+l2;
 	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
 
-            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-            //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
+            firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+            firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
+            firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
 
 			}
-
-
-
-
+			 //l2+=NUM_LEDS_PER_STRIP;
+       poli-=I2S_OFF2;
+      // firstPixel[0].bytes[15]=0;
+       //firstPixel[1].bytes[15]=0;
+       //firstPixel[2].bytes[15]=0;
        			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-	  //on va en strip5
-       poli-=I2S_OFF3;
+
+     /* transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
+       transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
+       transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);
+      offset++
+      */
+
+       /*
+       transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
+        transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
+        transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));
+       */
+
        buff++;
+		//if (line==NUM_VIRT_PINS-2)
+         //offset++;
 
-	   for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+		}
 
-	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+    /*firstPixel[0].bytes[15]=0x00;
+    firstPixel[1].bytes[15]=0x00;
+    firstPixel[2].bytes[15]=0x00;*/
+   /* poli=int_leds+l2;
+    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
-           firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-           firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-           firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-           //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+
+
+        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
-			//l+=nun_led_per_strip*NUM_VIRT_PINS;
-            poli+=I2S_OFF;
+        poli+=nun_led_per_strip*NUM_VIRT_PINS;
 
 
-			}
+    }
+    l2+=nun_led_per_strip;
 
 
 
+    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
+    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
+    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
-    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-      transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+/*
 
-	  //on va en strip8
-	  poli-=I2S_OFF4;
-       buff++;
+   // poli=int_leds+l2;
+   for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
-	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
-	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
-            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-            //l+=nun_led_per_strip*NUM_VIRT_PINS;
+        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
-			//l+=nun_led_per_strip*NUM_VIRT_PINS;
-            poli+=I2S_OFF;
+        poli+=I2S_OFF;
 
 
-			}
+    }
+    //l2+=nun_led_per_strip;
 
-
-
-
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    firstPixel[0].bytes[15]=255;
+    firstPixel[1].bytes[15]=255;
+    firstPixel[2].bytes[15]=255;
+   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-      transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+     //l2+=NUM_LEDS_PER_STRIP;
+    poli-=I2S_OFF2;
 
-	  //on va en strip7
-       poli-=I2S_OFF3;
-       buff++;
 
-	   for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
-	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-           firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-           firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
-           firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
-           //l+=nun_led_per_strip*NUM_VIRT_PINS;
+    buff++;*/
+/*
+    //poli=int_leds+l2;
+    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+
+        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+
+
+        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
+        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
         //l+=nun_led_per_strip*NUM_VIRT_PINS;
-			//l+=nun_led_per_strip*NUM_VIRT_PINS;
-            poli+=I2S_OFF;
+        poli+=I2S_OFF;
 
 
-			}
+    }
+    //l2+=nun_led_per_strip;
+   firstPixel[0].bytes[15]=0;
+    firstPixel[1].bytes[15]=0;
+    firstPixel[2].bytes[15]=0;
 
-
-
-
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-      transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
+
+   // pu3(g);
+*/
+    /*
+    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
+    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
+    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
+
+
+    /*
+ offset++;
+   transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
+    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
+    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);*/
+
+   /* buff++;
+    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
+    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));*/
 
 }
 

@@ -8,7 +8,15 @@
         #ifdef ESP_VIRTUAL_DRIVER_8
             #include "clockless_i2s_virtual_esp32_84.h"
         #else
-            #include "clockless_i2s_virtual_esp32.h"
+            #ifdef ESP_VIRTUAL_DRIVER_82
+                #include "clockless_i2s_virtual_esp32_82.h"
+            #else
+                    #ifdef ESP_VIRTUAL_DRIVER_82_2
+                        #include "clockless_i2s_virtual_esp32_82_2.h"
+                    #else
+                        #include "clockless_i2s_virtual_esp32.h"
+                    #endif
+            #endif
         #endif
     #endif
 #else
