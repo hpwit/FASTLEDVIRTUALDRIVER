@@ -83,7 +83,7 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
     #define C_R 0
     #define  C_B 2
 #else
-s   tatic byte C_G,C_R,C_B;
+static byte C_G,C_R,C_B;
 #endif
 
 #endif

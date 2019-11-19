@@ -73,66 +73,158 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define FF (0xF0F0F0F0L)
 #define FF2 (0x0F0F0F0FL)
 
-#ifndef COLOR_1
-    #define COLOR_1 CRB
-#endif
+#ifdef STATIC_COLOR_PER_PIN
+   #ifdef COLOR_1_RGB
+       #define C1_R 0
+       #define C1_G 1
+       #define  C1_B 2
+   #else
+      #define C1_G 0
+      #define C1_R 1
+      #define  C1_B 2
+   #endif
+   #ifdef COLOR_2_RGB
+       #define C2_R 0
+       #define C2_G 1
+       #define  C2_B 2
+   #else
+      #define C2_G 0
+      #define C2_R 1
+      #define  C2_B 2
+   #endif
+   #ifdef COLOR_3_RGB
+       #define C3_R 0
+       #define C3_G 1
+       #define  C3_B 2
+   #else
+      #define C3_G 0
+      #define C3_R 1
+      #define  C3_B 2
+   #endif
+   #ifdef COLOR_4_RGB
+       #define C4_R 0
+       #define C4_G 1
+       #define  C4_B 2
+   #else
+      #define C4_G 0
+      #define C4_R 1
+      #define  C4_B 2
+   #endif
+   #ifdef COLOR_5_RGB
+       #define C5_R 0
+       #define C5_G 1
+       #define  C5_B 2
+   #else
+      #define C5_G 0
+      #define C5_R 1
+      #define  C5_B 2
+   #endif
+   #ifdef COLOR_6_RGB
+       #define C6_R 0
+       #define C6_G 1
+       #define  C6_B 2
+   #else
+      #define C6_G 0
+      #define C6_R 1
+      #define  C6_B 2
+   #endif
+   #ifdef COLOR_7_RGB
+       #define C7_R 0
+       #define C7_G 1
+       #define  C7_B 2
+   #else
+      #define C7_G 0
+      #define C7_R 1
+      #define  C7_B 2
+   #endif
+   #ifdef COLOR_8_RGB
+       #define C8_R 0
+       #define C8_G 1
+       #define  C8_B 2
+   #else
+      #define C8_G 0
+      #define C8_R 1
+      #define  C8_B 2
+   #endif
+   #ifdef COLOR_9_RGB
+       #define C9_R 0
+       #define C9_G 1
+       #define  C9_B 2
+   #else
+      #define C9_G 0
+      #define C9_R 1
+      #define  C9_B 2
+   #endif
+   #ifdef COLOR_10_RGB
+       #define C10_R 0
+       #define C10_G 1
+       #define  C10_B 2
+   #else
+      #define C10_G 0
+      #define C10_R 1
+      #define  C10_B 2
+   #endif
+   #ifdef COLOR_11_RGB
+       #define C11_R 0
+       #define C11_G 1
+       #define  C11_B 2
+   #else
+      #define C11_G 0
+      #define C11_R 1
+      #define  C11_B 2
+   #endif
+   #ifdef COLOR_12_RGB
+       #define C12_R 0
+       #define C12_G 1
+       #define  C12_B 2
+   #else
+      #define C12_G 0
+      #define C12_R 1
+      #define  C12_B 2
+   #endif
+   #ifdef COLOR_13_RGB
+       #define C13_R 0
+       #define C13_G 1
+       #define  C13_B 2
+   #else
+      #define C13_G 0
+      #define C13_R 1
+      #define  C13_B 2
+   #endif
+   #ifdef COLOR_14_RGB
+       #define C14_R 0
+       #define C14_G 1
+       #define  C14_B 2
+   #else
+      #define C14_G 0
+      #define C14_R 1
+      #define  C14_B 2
+   #endif
+   #ifdef COLOR_15_RGB
+       #define C15_R 0
+       #define C15_G 1
+       #define  C15_B 2
+   #else
+      #define C15_G 0
+      #define C15_R 1
+      #define  C15_B 2
+   #endif
+#else
+	#ifdef STATIC_COLOR_GRB
+		#define C_G 0
+		#define C_R 1
+		#define  C_B 2
+	#else
+	#ifdef STATIC_COLOR_RGB
+		#define C_G 1
+		#define C_R 0
+		#define  C_B 2
+	#else
+		static byte C_G,C_R,C_B;
+	#endif
 
-#ifndef COLOR_2
-#define COLOR_2 CRB
+	#endif
 #endif
-
-#ifndef COLOR_3
-#define COLOR_2 CRB
-#endif
-
-#ifndef COLOR_4
-#define COLOR_4 CRB
-#endif
-
-#ifndef COLOR_5
-#define COLOR_5 CRB
-#endif
-
-#ifndef COLOR_6
-#define COLOR_6 CRB
-#endif
-
-#ifndef COLOR_7
-#define COLOR_7 CRB
-#endif
-
-#ifndef COLOR_8
-#define COLOR_8 CRB
-#endif
-
-#ifndef COLOR_8
-#define COLOR_8 CRB
-#endif
-
-#ifndef COLOR_1
-#define COLOR_1 CRB
-#endif
-
-#ifndef COLOR_1
-#define COLOR_1 CRB
-#endif
-
-#ifndef COLOR_1
-#define COLOR_1 CRB
-#endif
-
-#ifndef COLOR_1
-#define COLOR_1 CRB
-#endif
-
-#ifndef COLOR_1
-#define COLOR_1 CRB
-#endif
-
-#ifndef COLOR_1
-#define COLOR_1 CRB
-#endif
-
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
@@ -141,7 +233,7 @@ static int gNumStarted = 0;
 // -- Global semaphore for the whole show process
 //    Semaphore is not given until all data has been sent
 static xSemaphoreHandle gTX_sem = NULL;
-static byte C_G,C_R,C_B;
+
 // -- One-time I2S initialization
 static bool gInitialized = false;
 
@@ -168,8 +260,8 @@ static DMABuffer * dmaBuffers[NUM_DMA_BUFFERS];
 //    are global variables.
 
 static int      gPulsesPerBit = 0;
-static uint32_t gOneBit[40] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-static uint32_t gZeroBit[40]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+//static uint32_t gOneBit[40] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+//static uint32_t gZeroBit[40]  = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 // -- Counters to track progress
 static int gCurBuffer = 0;
@@ -209,9 +301,13 @@ static int dmaBufferActive;
   static volatile  int num_strips;
  static volatile  int nun_led_per_strip;
    // int *Pins;
-  static  float brightness_b;
-  static  float brightness_r;
-  static  float brightness_g;
+  static  int brightness_b;
+  static  int brightness_r;
+  static  int brightness_g;
+static uint8_t green_map[256];
+static uint8_t blue_map[256];
+static uint8_t red_map[256];
+
     static int ledType;
 	 static volatile CRGB *int_leds;
 	 static CRGB m_scale;
@@ -253,9 +349,18 @@ public:
 	//if (baseClock > -1)
 	//clock pin
 		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
-        C_R=(byte)(RGB_ORDER/64);
-        C_G=(byte)((RGB_ORDER-C_R*64)/8);
-        C_B=(byte)(RGB_ORDER-C_R*64-C_G*8);
+
+#ifndef STATIC_COLOR_PER_PIN
+	#ifndef STATIC_COLOR_GRB
+		#ifndef STATIC_COLOR_RGB
+				C_R=(byte)(RGB_ORDER/64);
+				C_G=(byte)((RGB_ORDER-C_R*64)/8);
+				C_B=(byte)(RGB_ORDER-C_R*64-C_G*8);
+		#endif
+	#endif
+#endif
+
+        
        // gpio_matrix_out(26, deviceWordSelectIndex[I2S_DEVICE], false, false);
        i2sInit();
 
@@ -470,11 +575,19 @@ protected:
 			m_scale=pixels.mScale;
         nun_led_per_strip=  pixels.mLen;
 			//Serial.printf("led - r:%d v:%d b%d\n",m_scale.r,m_scale.g,m_scale.b);
-
-			 brightness_b=(float)(256/(m_scale.b+1));
-			  brightness_r=(float)(256/(m_scale.r+1));
-			 brightness_g=(float)(256/(m_scale.r+1));
-        //Serial.printf("led - r:%f v:%f b%f\n",brightness_r,brightness_g,brightness_b);
+/*
+			 brightness_b=256/(m_scale.b+1);
+			  brightness_r=256/(m_scale.r+1);
+			 brightness_g=256/(m_scale.g+1);
+ */
+        
+        for(int i=0;i<256;i++)
+        {
+            green_map[i]=(uint8_t)((int)(i*m_scale.g)/255);
+            blue_map[i]=(uint8_t)((int)(i*m_scale.b)/255);
+            red_map[i]=(uint8_t)((int)(i*m_scale.r)/255);
+           // Serial.printf("led -  i:%d scale:%d r:%d v:%d b:%d\n",i,m_scale.r,green_map[i],red_map[i],blue_map[i]);
+        }
 			//for(int j=0;j<50;j++)
 			//{
 				//Serial.printf("led n:%d r:%d v:%d b%d\n",j,int_leds[j].r,int_leds[j].g,int_leds[j].b);
@@ -574,34 +687,6 @@ protected:
         }
     }
 
-    static void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
-    {
-        uint32_t x, y, t;
-
-        // Load the array and pack it into x and y.
-
-       // x = (A[7]<<24)   | (A[6]<<16)   | (A[5]<<8) | A[4];//(A[0]<<24)   | (A[m]<<16)   | (A[2*m]<<8) | A[3*m];
-        //y = *(uint16_t*)(A);//(A[3]<<12) | (A[2]<<8) | (A[1]<<4) | A[0];//(A[4*m]<<24) | (A[5*m]<<16) | (A[6*m]<<8) | A[7*m];
-
-
-        x = (A[0]<<24)   | (A[m]<<16)   | (A[2*m]<<8) | A[3*m];
-        y = (A[4*m]<<24) | (A[5*m]<<16) | (A[6*m]<<8) | A[7*m];
-
-        t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
-       t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
-
-        t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
-        t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
-
-        t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
-        y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
-        x = t;
-
-        B[0]=x>>24;    B[n]=x>>16;    B[2*n]=x>>8;  B[3*n]=x;
-        B[4*n]=y>>24;  B[5*n]=y>>16;  B[6*n]=y>>8;  B[7*n]=y;
-    }
-
-
 
 
 static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
@@ -660,7 +745,8 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
     */
 
     // *((uint16_t*)(B)) = (uint16_t)(   (   (x & 0xff000000) >>24 |  (  (x1 & 0xff000000) >>16)   )  );
-     *((uint16_t*)(B)) = (uint16_t)(((x & 0xff000000) >>8 |((x1&0xff000000) ))>>16);
+    // *((uint16_t*)(B+4*48)) = (uint16_t)(((x & 0xff000000) >>8 |((x1&0xff000000) ))>>16);
+    *((uint16_t*)(B)) = (uint16_t)(((x & 0xff000000) >>8 |((x1&0xff000000) ))>>16);
     //*((uint8_t*)(B))=*((uint8_t*)(&x)+3);
     //*((uint8_t*)(B+1))=*((uint8_t*)(&x1)+2);
 
@@ -697,144 +783,6 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
     }
 
 
-static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) {
-
-    uint32_t  x, y, x1,y1,t,x2,y2;
-
-
-
-    // Load the array and pack it into x and y.
-
-    /*  y = (*(unsigned char*)(A) & 0xffff ) |  ((*(unsigned char*)(A+4) & 0xffffL )<<16) ;
-
-     x = (*(unsigned char*)(A+8)& 0xffff ) |  ((*(unsigned char*)(A+12) & 0xffffL )<<16) ;
-
-     y1 = (*(unsigned char*)(A+2)& 0xffff ) |  ((*(unsigned char*)(A+6) & 0xffffL )<<16);
-
-     x1 = (*(unsigned char*)(A+10)& 0xffff )| ((*(unsigned char*)(A+14) & 0xffffL )<<16);*/
-
-    //printf("%d\n",*(unsigned int*)(A+4));
-
-
-
-
-
-    y = *(unsigned int*)(A);
-
-    x = *(unsigned int*)(A+4);
-
-    y1 = *(unsigned int*)(A+8);
-
-    x1 = *(unsigned int*)(A+12);
-
-
-
-    y2 = *(unsigned int*)(A+16);
-
-    x2 = *(unsigned int*)(A+20);
-
-
-
-
-
-    // pre-transform x
-
-    t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
-
-    t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
-
-
-
-    t = (x1 ^ (x1 >> 7)) & 0x00AA00AA;  x1 = x1 ^ t ^ (t << 7);
-
-    t = (x1 ^ (x1 >>14)) & 0x0000CCCC;  x1 = x1 ^ t ^ (t <<14);
-
-
-
-    t = (x2 ^ (x2 >> 7)) & 0x00AA00AA;  x2 = x2 ^ t ^ (t << 7);
-
-    t = (x2 ^ (x2 >>14)) & 0x0000CCCC;  x2 = x2 ^ t ^ (t <<14);
-
-
-
-    // pre-transform y
-
-    t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
-
-    t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
-
-
-
-    t = (y1 ^ (y1 >> 7)) & 0x00AA00AA;  y1 = y1 ^ t ^ (t << 7);
-
-    t = (y1 ^ (y1 >>14)) & 0x0000CCCC;  y1 = y1 ^ t ^ (t <<14);
-
-
-
-    t = (y2 ^ (y2 >> 7)) & 0x00AA00AA;  y2 = y2 ^ t ^ (t << 7);
-
-    t = (y2 ^ (y2 >>14)) & 0x0000CCCC;  y2 = y2 ^ t ^ (t <<14);
-
-
-
-    // final transform
-
-    t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
-
-    y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
-
-    x = t;
-
-
-
-    t = (x1 & 0xF0F0F0F0) | ((y1 >> 4) & 0x0F0F0F0F);
-
-    y1 = ((x1 << 4) & 0xF0F0F0F0) | (y1 & 0x0F0F0F0F);
-
-    x1 = t;
-
-
-
-    t = (x2 & 0xF0F0F0F0) | ((y2 >> 4) & 0x0F0F0F0F);
-
-    y2 = ((x2 << 4) & 0xF0F0F0F0) | (y2 & 0x0F0F0F0F);
-
-    x2 = t;
-
-
-
-
-
-
-
-    *((uint32_t*)B) = (uint32_t)(((y & 0xff) |  (  (y1 & 0xff) << 8 )  |  (  (y2 & 0xff) << 16 ))<<8 )&0xfffff00   ;
-	B-=offset;
-
-    *((uint32_t*)(B)) = (uint32_t)(((y & 0xff00) |((y1&0xff00) <<8)  |((y2&0xff00) <<16)  )<<8  )&0xfffff00;
-	B-=offset;
-
-    *((uint32_t*)(B)) =(uint32_t)((  (  (y & 0xff0000) >>16)|((y1&0xff0000) >>8)   |((y2&0xff0000))   )<<8  )&0xfffff00;
-	B-=offset;
-
-    *((uint32_t*)(B)) = (uint32_t)(((y & 0xff000000) >>16 |((y1&0xff000000)>>8 ) |((y2&0xff000000) )  ))&0xfffff00;
-	B-=offset;
-
-
-
-    *((uint32_t*)B) =(uint32_t)(( (x & 0xff) |((x1&0xff) <<8)  |((x2&0xff) <<16))<<8 )&0xfffff00;
-	B-=offset;
-
-    *((uint32_t*)(B)) = (uint32_t)(((x & 0xff00) |((x1&0xff00) <<8)    |((x2&0xff00) <<16)    ))&0xfffff00;
-	B-=offset;
-
-    *((uint32_t*)(B)) = (uint32_t)( ( (  (x & 0xff0000) >>16)|((x1&0xff0000) >>8)   |((x2&0xff0000))   )<<8  )&0xfffff00;
-	B-=offset;
-
-    *((uint32_t*)(B)) = (uint32_t)(((x & 0xff000000) >>16 |((x1&0xff000000)>>8 )    |((x2&0xff000000) )    ))&0xfffff00;
-
-
-
-}
 
 static void fillbuffer6(uint16_t *buff)
 {
@@ -858,27 +806,120 @@ static void fillbuffer6(uint16_t *buff)
     buff+=OFFSET;
     poli=int_leds+ledToDisplay;
     //uint32_t off=nun_led_per_strip*NUM_VIRT_PINS;
-    
-    
-    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-        
-        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-        
-        
-        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
-       // Serial.printf("%d\n", scale8(int_leds[l].r,brightness_r));
-        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        poli+=I2S_OFF;
-        
-        
-    }
+    	   #ifndef STATIC_COLOR_PER_PIN
+	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+
+	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+
+
+            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
+            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
+			//l+=nun_led_per_strip*NUM_VIRT_PINS;
+            poli+=I2S_OFF;
+
+
+			}
+		#else
+					#if NBSERIALPINS >=1
+								firstPixel[C1_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C1_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C1_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=2
+								firstPixel[C2_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C2_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C2_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=3
+								firstPixel[C3_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C3_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C3_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=4
+								firstPixel[C4_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C4_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C4_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=5
+								firstPixel[C5_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C5_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C5_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=6
+								firstPixel[C6_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C6_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C6_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=7
+								firstPixel[C7_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C7_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C7_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=8
+								firstPixel[C8_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C8_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C8_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+								#if NBSERIALPINS >=9
+								firstPixel[C9_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C9_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C9_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+								#if NBSERIALPINS >=10
+								firstPixel[C10_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C10_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C10_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=11
+								firstPixel[C11_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C11_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C11_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=12
+								firstPixel[C12_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C12_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C12_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=13
+								firstPixel[C13_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C13_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C13_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=14
+								firstPixel[C14_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C14_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C14_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=15
+								firstPixel[C15_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C15_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C15_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+ #endif
     //l2+=nun_led_per_strip;
     
     //firstPixel[0].bytes[15]=255;
     //firstPixel[1].bytes[15]=255;
     //firstPixel[2].bytes[15]=255;
+    firstPixel[0].bytes[15]=0;
+    firstPixel[1].bytes[15]=0;
+    firstPixel[2].bytes[15]=0;
     transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
@@ -888,20 +929,112 @@ static void fillbuffer6(uint16_t *buff)
     
     
     buff++;
-    
-    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-        
-        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-        
-        
-        firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        poli+=I2S_OFF;
-        
-        
-    }
+    	   #ifndef STATIC_COLOR_PER_PIN
+	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
+
+	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
+
+
+            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
+            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
+			//l+=nun_led_per_strip*NUM_VIRT_PINS;
+            poli+=I2S_OFF;
+
+
+			}
+		#else
+					#if NBSERIALPINS >=1
+								firstPixel[C1_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C1_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C1_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=2
+								firstPixel[C2_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C2_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C2_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=3
+								firstPixel[C3_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C3_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C3_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=4
+								firstPixel[C4_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C4_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C4_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=5
+								firstPixel[C5_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C5_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C5_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=6
+								firstPixel[C6_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C6_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C6_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=7
+								firstPixel[C7_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C7_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C7_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=8
+								firstPixel[C8_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C8_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C8_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+								#if NBSERIALPINS >=9
+								firstPixel[C9_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C9_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C9_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+								#if NBSERIALPINS >=10
+								firstPixel[C10_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C10_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C10_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=11
+								firstPixel[C11_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C11_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C11_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=12
+								firstPixel[C12_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C12_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C12_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=13
+								firstPixel[C13_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C13_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C13_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=14
+								firstPixel[C14_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C14_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C14_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=15
+								firstPixel[C15_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C15_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C15_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+ #endif
     //l2+=nun_led_per_strip;
     
     firstPixel[0].bytes[15]=255;
@@ -921,147 +1054,127 @@ static void fillbuffer6(uint16_t *buff)
     firstPixel[2].bytes[15]=0;
     
    for (int line=2;line<=NUM_VIRT_PINS;line++){
-   //uint32_t l=ledToDisplay+nun_led_per_strip*line;
-     //uint32_t l=l2;
-       //poli=int_leds+l2;
+
+	   #ifndef STATIC_COLOR_PER_PIN
 	    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
 
 	//uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
 
 
-            firstPixel[C_G].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-            firstPixel[C_R].bytes[pin] = (*poli).r/brightness_r;
-            firstPixel[C_B].bytes[pin] =(*poli).b/brightness_b;
+            firstPixel[C_G].bytes[pin] = green_map[(*poli).g];//(*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
+            firstPixel[C_R].bytes[pin] = red_map[(*poli).r];//(*poli).r/brightness_r;
+            firstPixel[C_B].bytes[pin] =blue_map[(*poli).b];//(*poli).b/brightness_b;
 			//l+=nun_led_per_strip*NUM_VIRT_PINS;
             poli+=I2S_OFF;
 
 
 			}
+		#else
+					#if NBSERIALPINS >=1
+								firstPixel[C1_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C1_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C1_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=2
+								firstPixel[C2_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C2_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C2_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=3
+								firstPixel[C3_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C3_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C3_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=4
+								firstPixel[C4_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C4_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C4_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=5
+								firstPixel[C5_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C5_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C5_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=6
+								firstPixel[C6_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C6_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C6_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=7
+								firstPixel[C7_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C7_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C7_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=8
+								firstPixel[C8_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C8_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C8_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+								#if NBSERIALPINS >=9
+								firstPixel[C9_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C9_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C9_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+								#if NBSERIALPINS >=10
+								firstPixel[C10_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C10_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C10_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=11
+								firstPixel[C11_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C11_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C11_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=12
+								firstPixel[C12_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C12_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C12_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=13
+								firstPixel[C13_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C13_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C13_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=14
+								firstPixel[C14_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C14_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C14_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+					#if NBSERIALPINS >=15
+								firstPixel[C15_G].bytes[pin] = green_map[(*poli).g];
+								firstPixel[C15_R].bytes[pin] = red_map[(*poli).r];
+								firstPixel[C15_B].bytes[pin] =blue_map[(*poli).b];
+					#endif
+					 poli+=I2S_OFF;
+ #endif
+
 			 //l2+=NUM_LEDS_PER_STRIP;
        poli-=I2S_OFF2;
-      // firstPixel[0].bytes[15]=0;
-       //firstPixel[1].bytes[15]=0;
-       //firstPixel[2].bytes[15]=0;
+      
        			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-
-     /* transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
-       transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
-       transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);
-      offset++
-      */
-
-       /*
-       transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
-        transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
-        transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));
-       */
-
        buff++;
-		//if (line==NUM_VIRT_PINS-2)
-         //offset++;
+		
 
 		}
 
-    /*firstPixel[0].bytes[15]=0x00;
-    firstPixel[1].bytes[15]=0x00;
-    firstPixel[2].bytes[15]=0x00;*/
-   /* poli=int_leds+l2;
-    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-
-        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-
-
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        poli+=nun_led_per_strip*NUM_VIRT_PINS;
-
-
-    }
-    l2+=nun_led_per_strip;
-
-
-
-    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
-    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
-    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
-
-/*
-
-   // poli=int_leds+l2;
-   for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-
-        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-
-
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        poli+=I2S_OFF;
-
-
-    }
-    //l2+=nun_led_per_strip;
-
-    firstPixel[0].bytes[15]=255;
-    firstPixel[1].bytes[15]=255;
-    firstPixel[2].bytes[15]=255;
-   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
-    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-     //l2+=NUM_LEDS_PER_STRIP;
-    poli-=I2S_OFF2;
-
-
-
-    buff++;*/
-/*
-    //poli=int_leds+l2;
-    for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
-
-        //uint32_t l=ledToDisplay+nun_led_per_strip*line+pin*nun_led_per_strip*5;
-
-
-        firstPixel[0].bytes[pin] = (*poli).g/brightness_g; //scale8(int_leds[l].g,brightness_g);
-        firstPixel[1].bytes[pin] = (*poli).r/brightness_r;
-        firstPixel[2].bytes[pin] =(*poli).b/brightness_b;
-        //l+=nun_led_per_strip*NUM_VIRT_PINS;
-        poli+=I2S_OFF;
-
-
-    }
-    //l2+=nun_led_per_strip;
-   firstPixel[0].bytes[15]=0;
-    firstPixel[1].bytes[15]=0;
-    firstPixel[2].bytes[15]=0;
-
-    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
-    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
-
-   // pu3(g);
-*/
-    /*
-    transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)(buff));
-    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)(buff+192));
-    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)(buff+384));*/
-
-
-    /*
- offset++;
-   transpose8rS32(firstPixel[0].bytes, 1, 48, (uint8_t*)&buff[offset]);
-    transpose8rS32(firstPixel[1].bytes, 1, 48, (uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3]);
-    transpose8rS32(firstPixel[2].bytes, 1, 48, (uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3]);*/
-
-   /* buff++;
-    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
-    transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
-    transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));*/
+ 
 
 }
 
