@@ -821,91 +821,91 @@ static void fillbuffer6(uint16_t *buff)
 
 			}
 		#else
-					#if NBSERIALPINS >=1
+					#if NBIS2SERIALPINS >=1
 								firstPixel[C1_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C1_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C1_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=2
+					#if NBIS2SERIALPINS >=2
 								firstPixel[C2_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C2_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C2_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=3
+					#if NBIS2SERIALPINS >=3
 								firstPixel[C3_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C3_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C3_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=4
+					#if NBIS2SERIALPINS >=4
 								firstPixel[C4_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C4_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C4_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=5
+					#if NBIS2SERIALPINS >=5
 								firstPixel[C5_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C5_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C5_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=6
+					#if NBIS2SERIALPINS >=6
 								firstPixel[C6_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C6_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C6_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=7
+					#if NBIS2SERIALPINS >=7
 								firstPixel[C7_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C7_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C7_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=8
+					#if NBIS2SERIALPINS >=8
 								firstPixel[C8_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C8_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C8_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-								#if NBSERIALPINS >=9
+								#if NBIS2SERIALPINS >=9
 								firstPixel[C9_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C9_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C9_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-								#if NBSERIALPINS >=10
+								#if NBIS2SERIALPINS >=10
 								firstPixel[C10_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C10_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C10_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=11
+					#if NBIS2SERIALPINS >=11
 								firstPixel[C11_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C11_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C11_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=12
+					#if NBIS2SERIALPINS >=12
 								firstPixel[C12_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C12_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C12_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=13
+					#if NBIS2SERIALPINS >=13
 								firstPixel[C13_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C13_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C13_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=14
+					#if NBIS2SERIALPINS >=14
 								firstPixel[C14_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C14_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C14_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=15
+					#if NBIS2SERIALPINS >=15
 								firstPixel[C15_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C15_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C15_B].bytes[pin] =blue_map[(*poli).b];
@@ -944,91 +944,91 @@ static void fillbuffer6(uint16_t *buff)
 
 			}
 		#else
-					#if NBSERIALPINS >=1
+					#if NBIS2SERIALPINS >=1
 								firstPixel[C1_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C1_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C1_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=2
+					#if NBIS2SERIALPINS >=2
 								firstPixel[C2_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C2_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C2_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=3
+					#if NBIS2SERIALPINS >=3
 								firstPixel[C3_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C3_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C3_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=4
+					#if NBIS2SERIALPINS >=4
 								firstPixel[C4_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C4_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C4_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=5
+					#if NBIS2SERIALPINS >=5
 								firstPixel[C5_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C5_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C5_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=6
+					#if NBIS2SERIALPINS >=6
 								firstPixel[C6_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C6_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C6_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=7
+					#if NBIS2SERIALPINS >=7
 								firstPixel[C7_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C7_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C7_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=8
+					#if NBIS2SERIALPINS >=8
 								firstPixel[C8_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C8_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C8_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-								#if NBSERIALPINS >=9
+								#if NBIS2SERIALPINS >=9
 								firstPixel[C9_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C9_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C9_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-								#if NBSERIALPINS >=10
+								#if NBIS2SERIALPINS >=10
 								firstPixel[C10_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C10_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C10_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=11
+					#if NBIS2SERIALPINS >=11
 								firstPixel[C11_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C11_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C11_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=12
+					#if NBIS2SERIALPINS >=12
 								firstPixel[C12_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C12_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C12_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=13
+					#if NBIS2SERIALPINS >=13
 								firstPixel[C13_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C13_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C13_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=14
+					#if NBIS2SERIALPINS >=14
 								firstPixel[C14_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C14_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C14_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=15
+					#if NBIS2SERIALPINS >=15
 								firstPixel[C15_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C15_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C15_B].bytes[pin] =blue_map[(*poli).b];
@@ -1070,91 +1070,91 @@ static void fillbuffer6(uint16_t *buff)
 
 			}
 		#else
-					#if NBSERIALPINS >=1
+					#if NBIS2SERIALPINS >=1
 								firstPixel[C1_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C1_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C1_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=2
+					#if NBIS2SERIALPINS >=2
 								firstPixel[C2_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C2_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C2_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=3
+					#if NBIS2SERIALPINS >=3
 								firstPixel[C3_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C3_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C3_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=4
+					#if NBIS2SERIALPINS >=4
 								firstPixel[C4_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C4_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C4_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=5
+					#if NBIS2SERIALPINS >=5
 								firstPixel[C5_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C5_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C5_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=6
+					#if NBIS2SERIALPINS >=6
 								firstPixel[C6_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C6_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C6_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=7
+					#if NBIS2SERIALPINS >=7
 								firstPixel[C7_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C7_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C7_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=8
+					#if NBIS2SERIALPINS >=8
 								firstPixel[C8_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C8_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C8_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-								#if NBSERIALPINS >=9
+								#if NBIS2SERIALPINS >=9
 								firstPixel[C9_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C9_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C9_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-								#if NBSERIALPINS >=10
+								#if NBIS2SERIALPINS >=10
 								firstPixel[C10_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C10_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C10_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=11
+					#if NBIS2SERIALPINS >=11
 								firstPixel[C11_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C11_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C11_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=12
+					#if NBIS2SERIALPINS >=12
 								firstPixel[C12_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C12_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C12_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=13
+					#if NBIS2SERIALPINS >=13
 								firstPixel[C13_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C13_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C13_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=14
+					#if NBIS2SERIALPINS >=14
 								firstPixel[C14_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C14_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C14_B].bytes[pin] =blue_map[(*poli).b];
 					#endif
 					 poli+=I2S_OFF;
-					#if NBSERIALPINS >=15
+					#if NBIS2SERIALPINS >=15
 								firstPixel[C15_G].bytes[pin] = green_map[(*poli).g];
 								firstPixel[C15_R].bytes[pin] = red_map[(*poli).r];
 								firstPixel[C15_B].bytes[pin] =blue_map[(*poli).b];
