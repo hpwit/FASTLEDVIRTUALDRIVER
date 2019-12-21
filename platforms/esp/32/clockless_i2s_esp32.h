@@ -136,6 +136,13 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 // -- Convert ESP32 cycles back into nanoseconds
 #define ESPCLKS_TO_NS(_CLKS) (((long)(_CLKS) * 1000L) / F_CPU_MHZ)
 
+
+/// Yves qdd
+static volatile bool stopSignal;
+static volatile bool runningPixel=false;
+
+
+
 // -- Array of all controllers
 static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
@@ -203,6 +210,7 @@ public:
 
     void init()
     {
+        //Serial.println("ini");
         i2sInit();
         
         // -- Allocate space to save the pixel controller
@@ -545,10 +553,12 @@ protected:
     //    This is the main entry point for the controller.
     virtual void showPixels(PixelController<RGB_ORDER> & pixels)
     {
+        
+        /*
         if (gNumStarted == 0) {
             // -- First controller: make sure everything is set up
             xSemaphoreTake(gTX_sem, portMAX_DELAY);
-        }
+        }*/
         
         // -- Initialize the local state, save a pointer to the pixel
         //    data. We need to make a copy because pixels is a local
@@ -565,6 +575,7 @@ protected:
         // -- The last call to showPixels is the one responsible for doing
         //    all of the actual work
         if (gNumStarted == gNumControllers) {
+            //Serial.printf("show %d\n ",gNumStarted);
             empty((uint32_t*)dmaBuffers[0]->buffer);
             empty((uint32_t*)dmaBuffers[1]->buffer);
             gCurBuffer = 0;
@@ -573,27 +584,49 @@ protected:
             // -- Prefill both buffers
             fillBuffer();
             fillBuffer();
-            
+            runningPixel=true;
             i2sStart();
             
             // -- Wait here while the rest of the data is sent. The interrupt handler
             //    will keep refilling the DMA buffers until it is all sent; then it
             //    gives the semaphore back.
-            xSemaphoreTake(gTX_sem, portMAX_DELAY);
-            xSemaphoreGive(gTX_sem);
             
-            i2sStop();
+            //to uncomment bellow
+           // xSemaphoreTake(gTX_sem, portMAX_DELAY);
+           // xSemaphoreGive(gTX_sem);
+            //i2sStop();
+            
+            while(runningPixel==true);
+            gNumStarted = 0;
+            delayMicroseconds(50);
             
             // -- Reset the counters
-            gNumStarted = 0;
-            delayMicroseconds(500);
+            //gNumStarted = 0;
+            //delayMicroseconds(500);
         }
     }
     
     // -- Custom interrupt handler
     static IRAM_ATTR void interruptHandler(void *arg)
     {
-        if (i2s->int_st.out_eof) {
+       
+        if (!i2s->int_st.out_eof)
+            return;
+        i2s->int_clr.val = i2s->int_raw.val;
+        
+        
+        if(gDoneFilling)
+        {
+            
+            i2sStop();
+            runningPixel=false;
+            return;
+        }
+        else
+            fillBuffer();
+            
+        
+        /*if (i2s->int_st.out_eof) {
             i2s->int_clr.val = i2s->int_raw.val;
             
             if ( ! gDoneFilling) {
@@ -603,7 +636,7 @@ protected:
                 xSemaphoreGiveFromISR(gTX_sem, &HPTaskAwoken);
                 if(HPTaskAwoken == pdTRUE) portYIELD_FROM_ISR();
             }
-        }
+        }*/
     }
     
     /** Fill DMA buffer
@@ -642,6 +675,7 @@ protected:
         // -- None of the strips has data? We are done.
         if (has_data_mask == 0) {
             gDoneFilling = true;
+            
             return;
         }
         
