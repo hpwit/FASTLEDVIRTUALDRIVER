@@ -193,6 +193,7 @@ static uint8_t gPixelBits[NUM_COLOR_CHANNELS][8][4];
 static int CLOCK_DIVIDER_N;
 static int CLOCK_DIVIDER_A;
 static int CLOCK_DIVIDER_B;
+static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 5>
 class ClocklessController : public CPixelLEDController<RGB_ORDER>
@@ -612,6 +613,7 @@ protected:
        
         if (!i2s->int_st.out_eof)
             return;
+        
         i2s->int_clr.val = i2s->int_raw.val;
         
         
@@ -623,8 +625,9 @@ protected:
             return;
         }
         else
+            portENTER_CRITICAL_ISR(&timerMux);
             fillBuffer();
-            
+          portEXIT_CRITICAL_ISR(&timerMux);
         
         /*if (i2s->int_st.out_eof) {
             i2s->int_clr.val = i2s->int_raw.val;
@@ -645,7 +648,7 @@ protected:
      *  from each strip), transpose and encode the bits, and store
      *  them in the DMA buffer for the I2S peripheral to read.
      */
-    static void fillBuffer()
+    static IRAM_ATTR void fillBuffer()
     {
         // -- Alternate between buffers
         volatile uint32_t * buf = (uint32_t *) dmaBuffers[gCurBuffer]->buffer;
@@ -705,7 +708,7 @@ protected:
         }
     }
     
-    static void transpose32(uint8_t * pixels, uint8_t * bits)
+    static IRAM_ATTR void transpose32(uint8_t * pixels, uint8_t * bits)
     {
         transpose8rS32(& pixels[0],  1, 4, & bits[0]);
         transpose8rS32(& pixels[8],  1, 4, & bits[1]);
@@ -716,7 +719,7 @@ protected:
     /** Transpose 8x8 bit matrix
      *  From Hacker's Delight
      */
-    static void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
+    static IRAM_ATTR void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
     {
         uint32_t x, y, t;
         
