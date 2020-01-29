@@ -609,7 +609,7 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
     
     
     
-    static void transpose24x1_noinline2(unsigned char *A, uint8_t *B) {
+    static IRAM_ATTR void transpose24x1_noinline2(unsigned char *A, uint8_t *B) {
         
         uint32_t  x, y, x1,y1,t,x2,y2;
         
@@ -749,7 +749,7 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
     }
 
 
-static void fillbuffer6(uint32_t *buff)
+static IRAM_ATTR void fillbuffer6(uint32_t *buff)
 {
     //return;
 	Lines firstPixel[3];
