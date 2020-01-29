@@ -62,6 +62,9 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #ifndef NBIS2SERIALPINS
 #define NBIS2SERIALPINS 1
 #endif
+#define OFFSET (7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS
+#define OFFSET2 NUM_LEDS_PER_STRIP * NUM_VIRT_PINS;
+
 // -- Array of all controllers
 //static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
 static int gNumControllers = 0;
@@ -603,6 +606,148 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
     
 
 }
+    
+    
+    
+    static void transpose24x1_noinline2(unsigned char *A, uint8_t *B) {
+        
+        uint32_t  x, y, x1,y1,t,x2,y2;
+        
+        
+        
+        // Load the array and pack it into x and y.
+        
+        /*  y = (*(unsigned char*)(A) & 0xffff ) |  ((*(unsigned char*)(A+4) & 0xffffL )<<16) ;
+         
+         x = (*(unsigned char*)(A+8)& 0xffff ) |  ((*(unsigned char*)(A+12) & 0xffffL )<<16) ;
+         
+         y1 = (*(unsigned char*)(A+2)& 0xffff ) |  ((*(unsigned char*)(A+6) & 0xffffL )<<16);
+         
+         x1 = (*(unsigned char*)(A+10)& 0xffff )| ((*(unsigned char*)(A+14) & 0xffffL )<<16);*/
+        
+        //printf("%d\n",*(unsigned int*)(A+4));
+        
+        
+        
+        
+        
+        y = *(unsigned int*)(A);
+        
+        x = *(unsigned int*)(A+4);
+        
+        y1 = *(unsigned int*)(A+8);
+        
+        x1 = *(unsigned int*)(A+12);
+        
+        
+        
+        y2 = *(unsigned int*)(A+16);
+        
+        x2 = *(unsigned int*)(A+20);
+        
+        
+        
+        
+        
+        // pre-transform x
+        
+        t = (x ^ (x >> 7)) & 0x00AA00AA;  x = x ^ t ^ (t << 7);
+        
+        t = (x ^ (x >>14)) & 0x0000CCCC;  x = x ^ t ^ (t <<14);
+        
+        
+        
+        t = (x1 ^ (x1 >> 7)) & 0x00AA00AA;  x1 = x1 ^ t ^ (t << 7);
+        
+        t = (x1 ^ (x1 >>14)) & 0x0000CCCC;  x1 = x1 ^ t ^ (t <<14);
+        
+        
+        
+        t = (x2 ^ (x2 >> 7)) & 0x00AA00AA;  x2 = x2 ^ t ^ (t << 7);
+        
+        t = (x2 ^ (x2 >>14)) & 0x0000CCCC;  x2 = x2 ^ t ^ (t <<14);
+        
+        
+        
+        // pre-transform y
+        
+        t = (y ^ (y >> 7)) & 0x00AA00AA;  y = y ^ t ^ (t << 7);
+        
+        t = (y ^ (y >>14)) & 0x0000CCCC;  y = y ^ t ^ (t <<14);
+        
+        
+        
+        t = (y1 ^ (y1 >> 7)) & 0x00AA00AA;  y1 = y1 ^ t ^ (t << 7);
+        
+        t = (y1 ^ (y1 >>14)) & 0x0000CCCC;  y1 = y1 ^ t ^ (t <<14);
+        
+        
+        
+        t = (y2 ^ (y2 >> 7)) & 0x00AA00AA;  y2 = y2 ^ t ^ (t << 7);
+        
+        t = (y2 ^ (y2 >>14)) & 0x0000CCCC;  y2 = y2 ^ t ^ (t <<14);
+        
+        
+        
+        // final transform
+        
+        t = (x & 0xF0F0F0F0) | ((y >> 4) & 0x0F0F0F0F);
+        
+        y = ((x << 4) & 0xF0F0F0F0) | (y & 0x0F0F0F0F);
+        
+        x = t;
+        
+        
+        
+        t = (x1 & 0xF0F0F0F0) | ((y1 >> 4) & 0x0F0F0F0F);
+        
+        y1 = ((x1 << 4) & 0xF0F0F0F0) | (y1 & 0x0F0F0F0F);
+        
+        x1 = t;
+        
+        
+        
+        t = (x2 & 0xF0F0F0F0) | ((y2 >> 4) & 0x0F0F0F0F);
+        
+        y2 = ((x2 << 4) & 0xF0F0F0F0) | (y2 & 0x0F0F0F0F);
+        
+        x2 = t;
+        
+        
+        
+        
+        
+        
+        
+        *((uint32_t*)B) = (uint32_t)(((y & 0xff) |  (  (y1 & 0xff) << 8 )  |  (  (y2 & 0xff) << 16 ))<<8 )&0xfffff00   ;
+       // B-=offset;
+        
+        *((uint32_t*)(B-72)) = (uint32_t)(((y & 0xff00) |((y1&0xff00) <<8)  |((y2&0xff00) <<16)  )<<8  )&0xfffff00;
+       //B-=offset;
+        
+        *((uint32_t*)(B-144)) =(uint32_t)((  (  (y & 0xff0000) >>16)|((y1&0xff0000) >>8)   |((y2&0xff0000))   )<<8  )&0xfffff00;
+        //B-=offset;
+        
+        *((uint32_t*)(B-3*72)) = (uint32_t)(((y & 0xff000000) >>16 |((y1&0xff000000)>>8 ) |((y2&0xff000000) )  ))&0xfffff00;
+       // B-=offset;
+        
+        
+        
+        *((uint32_t*)(B-4*72)) =(uint32_t)(( (x & 0xff) |((x1&0xff) <<8)  |((x2&0xff) <<16))<<8 )&0xfffff00;
+        //B-=offset;
+        
+        *((uint32_t*)(B-5*72)) = (uint32_t)(((x & 0xff00) |((x1&0xff00) <<8)    |((x2&0xff00) <<16)    ))&0xfffff00;
+        B-=offset;
+        
+        *((uint32_t*)(B-6*72)) = (uint32_t)( ( (  (x & 0xff0000) >>16)|((x1&0xff0000) >>8)   |((x2&0xff0000))   )<<8  )&0xfffff00;
+        B-=offset;
+        
+        *((uint32_t*)(B-7*72)) = (uint32_t)(((x & 0xff000000) >>16 |((x1&0xff000000)>>8 )    |((x2&0xff000000) )    ))&0xfffff00;
+        
+        
+        
+    }
+
 
 static void fillbuffer6(uint32_t *buff)
 {
@@ -616,7 +761,7 @@ static void fillbuffer6(uint32_t *buff)
   
    uint32_t l2=ledToDisplay;
    //Serial.println(ledToDisplay);
-	 uint32_t offset=(7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS;
+    uint32_t offset=OFFSET;//(7)*(NUM_VIRT_PINS+1)*3+2*NUM_VIRT_PINS;
    for (int line=0;line<NUM_VIRT_PINS;line++){
    //uint32_t l=ledToDisplay+nun_led_per_strip*line;
      uint32_t l=l2;
@@ -628,15 +773,20 @@ static void fillbuffer6(uint32_t *buff)
 			firstPixel[0].bytes[pin] = int_leds[l].g/brightness_g; //scale8(int_leds[l].g,brightness_g);
             firstPixel[1].bytes[pin] = int_leds[l].r/brightness_r;
             firstPixel[2].bytes[pin] = int_leds[l].b/brightness_b;
-			l+=nun_led_per_strip*NUM_VIRT_PINS;
-
+			//l+=nun_led_per_strip*NUM_VIRT_PINS;
+            l+=OFFSET2;
 
 			}
-			 l2+=nun_led_per_strip;
-			 
+			// l2+=nun_led_per_strip;
+       l2+=NUM_LEDS_PER_STRIP
+			 /*
 			transpose24x1_noinline(firstPixel[0].bytes,(uint8_t*)&buff[offset],(NUM_VIRT_PINS+1)*3*4);
         		transpose24x1_noinline(firstPixel[1].bytes,(uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);
-        		transpose24x1_noinline(firstPixel[2].bytes,(uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);		
+        		transpose24x1_noinline(firstPixel[2].bytes,(uint8_t*)&buff[offset+16*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);*/
+       
+       transpose24x1_noinline2(firstPixel[0].bytes,(uint8_t*)&buff[offset]);
+       transpose24x1_noinline2(firstPixel[1].bytes,(uint8_t*)&buff[offset+144]);
+       transpose24x1_noinline2(firstPixel[2].bytes,(uint8_t*)&buff[offset+288]);
 				offset--;
 				
 		}

@@ -602,6 +602,10 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #define C_G 0
 #define C_R 1
 #define C_B 2
+
+#else
+static byte C_G,C_R,C_B;
+
 #endif
 #endif
 #endif
@@ -814,7 +818,8 @@ static int CLOCK_DIVIDER_N;
 static int CLOCK_DIVIDER_A;
 static int CLOCK_DIVIDER_B;
 static int dmaBufferActive;
-
+static volatile long countfps;
+static volatile int nbp;
 	static volatile bool stopSignal;
  static volatile bool runningPixel=false;
 
@@ -1041,7 +1046,7 @@ protected:
 
         // -- Allocate i2s interrupt
         SET_PERI_REG_BITS(I2S_INT_ENA_REG(I2S_DEVICE), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
-        esp_err_t e = esp_intr_alloc(interruptSource, 0, // ESP_INTR_FLAG_INTRDISABLED | ESP_INTR_FLAG_LEVEL3,
+        esp_err_t e = esp_intr_alloc(interruptSource, ESP_INTR_FLAG_INTRDISABLED  , // ESP_INTR_FLAG_INTRDISABLED | ESP_INTR_FLAG_LEVEL3,
                                      &interruptHandler, 0, &gI2S_intr_handle);
 
         // -- Create a semaphore to block execution until all the controllers are done
@@ -1127,6 +1132,8 @@ protected:
     {
 
 		//Serial.println("Show");
+        nbp=0;
+        countfps=0;
 			int_leds=(CRGB*)pixels.mData;
 			m_scale=pixels.mScale;
         nun_led_per_strip=  pixels.mLen;
@@ -1175,7 +1182,10 @@ protected:
         runningPixel=true;
         //startTX();
 		i2sStart();
+        //long time3=ESP.getCycleCount();
         while(runningPixel==true);
+        //time3=ESP.getCycleCount()-time3;
+       // Serial.printf("fps:%f\n",(float)240000000L/time3);
         delayMicroseconds(50);
 
     }
@@ -1228,7 +1238,12 @@ protected:
                 return;*/
 				            stopSignal=true;
 			}
+          //  long time3=ESP.getCycleCount();
 			fillbuffer6((uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
+         //   time3=ESP.getCycleCount()-time3;
+         //   if(countfps<time3)
+          //      countfps=time3;
+          //  nbp++;
 			ledToDisplay++;
             dmaBufferActive = (dmaBufferActive + 1)% 2;
 			//if(ledToDisplay)
