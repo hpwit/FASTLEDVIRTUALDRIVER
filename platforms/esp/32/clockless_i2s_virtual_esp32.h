@@ -737,10 +737,10 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
         //B-=offset;
         
         *((uint32_t*)(B-5*72)) = (uint32_t)(((x & 0xff00) |((x1&0xff00) <<8)    |((x2&0xff00) <<16)    ))&0xfffff00;
-        B-=offset;
+        //B-=offset;
         
         *((uint32_t*)(B-6*72)) = (uint32_t)( ( (  (x & 0xff0000) >>16)|((x1&0xff0000) >>8)   |((x2&0xff0000))   )<<8  )&0xfffff00;
-        B-=offset;
+        //B-=offset;
         
         *((uint32_t*)(B-7*72)) = (uint32_t)(((x & 0xff000000) >>16 |((x1&0xff000000)>>8 )    |((x2&0xff000000) )    ))&0xfffff00;
         
@@ -778,7 +778,7 @@ static void fillbuffer6(uint32_t *buff)
 
 			}
 			// l2+=nun_led_per_strip;
-       l2+=NUM_LEDS_PER_STRIP
+       l2+=NUM_LEDS_PER_STRIP;
 			 /*
 			transpose24x1_noinline(firstPixel[0].bytes,(uint8_t*)&buff[offset],(NUM_VIRT_PINS+1)*3*4);
         		transpose24x1_noinline(firstPixel[1].bytes,(uint8_t*)&buff[offset+8*(NUM_VIRT_PINS+1)*3],(NUM_VIRT_PINS+1)*3*4);
