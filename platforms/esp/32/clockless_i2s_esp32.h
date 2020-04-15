@@ -18,7 +18,7 @@
  * peripheral to send up to 24 bits in parallel to 24 different pins.
  * Unlike the RMT peripheral the I2S system cannot send bits of
  * different lengths. Instead, we set the I2S data clock fairly high
- * and then encode a signal as a series of bits. 
+ * and then encode a signal as a series of bits.
  *
  * For example, with a clock divider of 10 the data clock will be
  * 8MHz, so each bit is 125ns. The WS2812 expects a "1" bit to be
@@ -106,8 +106,6 @@ extern "C" {
 #include "esp_intr.h"
 #include "esp_log.h"
     
-extern void spi_flash_op_lock(void);
-extern void spi_flash_op_unlock(void);
 #ifdef __cplusplus
 }
 #endif
@@ -133,17 +131,10 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 
 // -- I2S clock
 #define I2S_BASE_CLK (80000000L)
-#define I2S_MAX_CLK (15000000L) //more tha a certain speed and the I2s looses some bits
+#define I2S_MAX_CLK (20000000L) //more tha a certain speed and the I2s looses some bits
 #define I2S_MAX_PULSE_PER_BIT 20 //put it higher to get more accuracy but it could decrease the refresh rate without real improvement
 // -- Convert ESP32 cycles back into nanoseconds
 #define ESPCLKS_TO_NS(_CLKS) (((long)(_CLKS) * 1000L) / F_CPU_MHZ)
-
-
-/// Yves qdd
-static volatile bool stopSignal;
-static volatile bool runningPixel=false;
-
-
 
 // -- Array of all controllers
 static CLEDController * gControllers[FASTLED_I2S_MAX_CONTROLLERS];
@@ -195,7 +186,6 @@ static uint8_t gPixelBits[NUM_COLOR_CHANNELS][8][4];
 static int CLOCK_DIVIDER_N;
 static int CLOCK_DIVIDER_A;
 static int CLOCK_DIVIDER_B;
-static portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
 
 template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 5>
 class ClocklessController : public CPixelLEDController<RGB_ORDER>
@@ -210,10 +200,9 @@ class ClocklessController : public CPixelLEDController<RGB_ORDER>
     PixelController<RGB_ORDER> * mPixels;
     
 public:
-
+    
     void init()
     {
-        //Serial.println("ini");
         i2sInit();
         
         // -- Allocate space to save the pixel controller
@@ -241,8 +230,8 @@ public:
     virtual uint16_t getMaxRefreshRate() const { return 400; }
     
 protected:
-   
-   static int pgcd(int smallest,int precision,int a,int b,int c)
+    
+    static int pgcd(int smallest,int precision,int a,int b,int c)
     {
         int pgc_=1;
         for( int i=smallest;i>0;i--)
@@ -271,7 +260,7 @@ protected:
     {
         // Precompute the bit patterns based on the I2S sample rate
         // Serial.println("Setting up fastled using I2S");
-
+        
         // -- First, convert back to ns from CPU clocks
         uint32_t T1ns = ESPCLKS_TO_NS(T1);
         uint32_t T2ns = ESPCLKS_TO_NS(T2);
@@ -296,7 +285,7 @@ protected:
             smallest=T3;
         double freq=(double)1/(double)(T1ns + T2ns + T3ns);
         // Serial.printf("chipset frequency:%f Khz\n", 1000000L*freq);
-       // Serial.printf("smallest %d\n",smallest);
+        // Serial.printf("smallest %d\n",smallest);
         int pgc_=1;
         int precision=0;
         pgc_=pgcd(smallest,precision,T1,T2,T3);
@@ -318,7 +307,7 @@ protected:
          WS2811 T=320+320+641=1281ns qnd we need 4 pulses => pulse duration 320.25ns =>frequency 3.1225605Mhz
          
          */
-
+        
         freq=1000000000L*freq*gPulsesPerBit;
         // Serial.printf("needed frequency (nbpiulse per bit)*(chispset frequency):%f Mhz\n",freq/1000000);
         
@@ -329,9 +318,9 @@ protected:
          
          */
         
-         CLOCK_DIVIDER_N=(int)((double)I2S_BASE_CLK/freq);
+        CLOCK_DIVIDER_N=(int)((double)I2S_BASE_CLK/freq);
         double v=I2S_BASE_CLK/freq-CLOCK_DIVIDER_N;
-
+        
         double prec=(double)1/63;
         int a=1;
         int b=0;
@@ -401,8 +390,8 @@ protected:
         
         //int ones_for_zero = ((T1ns - 1)/FASTLED_I2S_NS_PER_PULSE) + 1;
         ones_for_zero =T1/pgc_  ;
-       // Serial.print("Zero bit:  target ");
-       // Serial.print(T1ns); Serial.print("ns --- ");
+        // Serial.print("Zero bit:  target ");
+        // Serial.print(T1ns); Serial.print("ns --- ");
         //Serial.print(ones_for_zero); Serial.print(" 1 bits");
         //Serial.print(" = "); Serial.print(ones_for_zero * FASTLED_I2S_NS_PER_PULSE); Serial.println("ns");
         // Serial.printf("Zero bit : target %d ns --- %d pulses  1 bit =   %f ns\n",T1ns,ones_for_zero ,ones_for_zero*pulseduration);
@@ -518,7 +507,7 @@ protected:
         // -- Arrange them as a circularly linked list
         dmaBuffers[0]->descriptor.qe.stqe_next = &(dmaBuffers[1]->descriptor);
         dmaBuffers[1]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
-       
+        
         // -- Allocate i2s interrupt
         SET_PERI_REG_BITS(I2S_INT_ENA_REG(I2S_DEVICE), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
         esp_err_t e = esp_intr_alloc(interruptSource, 0, // ESP_INTR_FLAG_INTRDISABLED | ESP_INTR_FLAG_LEVEL3,
@@ -556,12 +545,10 @@ protected:
     //    This is the main entry point for the controller.
     virtual void showPixels(PixelController<RGB_ORDER> & pixels)
     {
-        
-        /*
         if (gNumStarted == 0) {
             // -- First controller: make sure everything is set up
             xSemaphoreTake(gTX_sem, portMAX_DELAY);
-        }*/
+        }
         
         // -- Initialize the local state, save a pointer to the pixel
         //    data. We need to make a copy because pixels is a local
@@ -571,14 +558,13 @@ protected:
         
         // -- Keep track of the number of strips we've seen
         gNumStarted++;
-
+        
         // Serial.print("Show pixels ");
         // Serial.println(gNumStarted);
         
         // -- The last call to showPixels is the one responsible for doing
         //    all of the actual work
         if (gNumStarted == gNumControllers) {
-            //Serial.printf("show %d\n ",gNumStarted);
             empty((uint32_t*)dmaBuffers[0]->buffer);
             empty((uint32_t*)dmaBuffers[1]->buffer);
             gCurBuffer = 0;
@@ -587,57 +573,26 @@ protected:
             // -- Prefill both buffers
             fillBuffer();
             fillBuffer();
-            runningPixel=true;
+            
             i2sStart();
             
             // -- Wait here while the rest of the data is sent. The interrupt handler
             //    will keep refilling the DMA buffers until it is all sent; then it
             //    gives the semaphore back.
+            xSemaphoreTake(gTX_sem, portMAX_DELAY);
+            xSemaphoreGive(gTX_sem);
             
-            //to uncomment bellow
-           // xSemaphoreTake(gTX_sem, portMAX_DELAY);
-           // xSemaphoreGive(gTX_sem);
-            //i2sStop();
-#if FASTLED_ESP32_FLASH_LOCK == 1
-            // -- Make sure no flash operations happen right now
-            spi_flash_op_lock();
-#endif
-            while(runningPixel==true);
-            gNumStarted = 0;
-            delayMicroseconds(50);
-#if FASTLED_ESP32_FLASH_LOCK == 1
-            // -- Make sure no flash operations happen right now
-            spi_flash_op_unlock();
-#endif
+            i2sStop();
+            
             // -- Reset the counters
-            //gNumStarted = 0;
-            //delayMicroseconds(500);
+            gNumStarted = 0;
         }
     }
     
     // -- Custom interrupt handler
     static IRAM_ATTR void interruptHandler(void *arg)
     {
-       
-        if (!i2s->int_st.out_eof)
-            return;
-        
-        i2s->int_clr.val = i2s->int_raw.val;
-        
-        
-        if(gDoneFilling)
-        {
-            
-            i2sStop();
-            runningPixel=false;
-            return;
-        }
-        else
-            portENTER_CRITICAL_ISR(&timerMux);
-            fillBuffer();
-          portEXIT_CRITICAL_ISR(&timerMux);
-        
-        /*if (i2s->int_st.out_eof) {
+        if (i2s->int_st.out_eof) {
             i2s->int_clr.val = i2s->int_raw.val;
             
             if ( ! gDoneFilling) {
@@ -647,7 +602,7 @@ protected:
                 xSemaphoreGiveFromISR(gTX_sem, &HPTaskAwoken);
                 if(HPTaskAwoken == pdTRUE) portYIELD_FROM_ISR();
             }
-        }*/
+        }
     }
     
     /** Fill DMA buffer
@@ -656,7 +611,7 @@ protected:
      *  from each strip), transpose and encode the bits, and store
      *  them in the DMA buffer for the I2S peripheral to read.
      */
-    static IRAM_ATTR void fillBuffer()
+    static void fillBuffer()
     {
         // -- Alternate between buffers
         volatile uint32_t * buf = (uint32_t *) dmaBuffers[gCurBuffer]->buffer;
@@ -686,7 +641,6 @@ protected:
         // -- None of the strips has data? We are done.
         if (has_data_mask == 0) {
             gDoneFilling = true;
-            
             return;
         }
         
@@ -702,12 +656,12 @@ protected:
                 uint8_t * row = (uint8_t *) (gPixelBits[channel][bitnum]);
                 uint32_t bit = (row[0] << 24) | (row[1] << 16) | (row[2] << 8) | row[3];
                 
-               /* SZG: More general, but too slow:
-                    for (int pulse_num = 0; pulse_num < gPulsesPerBit; pulse_num++) {
-                        buf[buf_index++] = has_data_mask & ( (bit & gOneBit[pulse_num]) | (~bit & gZeroBit[pulse_num]) );
-                     }
-               */
-
+                /* SZG: More general, but too slow:
+                 for (int pulse_num = 0; pulse_num < gPulsesPerBit; pulse_num++) {
+                 buf[buf_index++] = has_data_mask & ( (bit & gOneBit[pulse_num]) | (~bit & gZeroBit[pulse_num]) );
+                 }
+                 */
+                
                 // -- Only fill in the pulses that are different between the "0" and "1" encodings
                 for(int pulse_num = ones_for_zero; pulse_num < ones_for_one; pulse_num++) {
                     buf[bitnum*gPulsesPerBit+channel*8*gPulsesPerBit+pulse_num] = has_data_mask & bit;
@@ -716,7 +670,7 @@ protected:
         }
     }
     
-    static IRAM_ATTR void transpose32(uint8_t * pixels, uint8_t * bits)
+    static void transpose32(uint8_t * pixels, uint8_t * bits)
     {
         transpose8rS32(& pixels[0],  1, 4, & bits[0]);
         transpose8rS32(& pixels[8],  1, 4, & bits[1]);
@@ -727,7 +681,7 @@ protected:
     /** Transpose 8x8 bit matrix
      *  From Hacker's Delight
      */
-    static IRAM_ATTR void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
+    static void transpose8rS32(uint8_t * A, int m, int n, uint8_t * B)
     {
         uint32_t x, y, t;
         
