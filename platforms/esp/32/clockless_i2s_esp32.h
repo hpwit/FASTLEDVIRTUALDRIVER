@@ -106,6 +106,8 @@ extern "C" {
 #include "esp_intr.h"
 #include "esp_log.h"
     
+extern void spi_flash_op_lock(void);
+extern void spi_flash_op_unlock(void);
 #ifdef __cplusplus
 }
 #endif
@@ -596,11 +598,17 @@ protected:
            // xSemaphoreTake(gTX_sem, portMAX_DELAY);
            // xSemaphoreGive(gTX_sem);
             //i2sStop();
-            
+#if FASTLED_ESP32_FLASH_LOCK == 1
+            // -- Make sure no flash operations happen right now
+            spi_flash_op_lock();
+#endif
             while(runningPixel==true);
             gNumStarted = 0;
             delayMicroseconds(50);
-            
+#if FASTLED_ESP32_FLASH_LOCK == 1
+            // -- Make sure no flash operations happen right now
+            spi_flash_op_unlock();
+#endif
             // -- Reset the counters
             //gNumStarted = 0;
             //delayMicroseconds(500);
