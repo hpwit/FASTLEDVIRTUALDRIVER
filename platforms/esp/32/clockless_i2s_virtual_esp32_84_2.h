@@ -451,20 +451,20 @@ protected:
         i2s->sample_rate_conf.tx_bits_mod = 16; // Number of parallel bits/pins
         i2s->sample_rate_conf.tx_bck_div_num = 1;
         i2s->clkm_conf.val = 0;
-        i2s->clkm_conf.clka_en = 0;//1;
+        i2s->clkm_conf.clka_en = 1;//1;
 
 //rtc_clk_apll_enable(true, 215, 163,1, 20);
 		//rtc_clk_apll_enable(true, 215, 163,4, 1); //14.4Mhz 5pins +1 latch
         //rtc_clk_apll_enable(true, 123, 20,6, 1); //16.8Mhz 6 pins +1 latchtch
         //rtc_clk_apll_enable(true, 164, 112,9, 2); //16.8Mhz 6 pins +1 latchtch
-        //rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
+        rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
 
         // -- Data clock is computed as Base/(div_num + (div_b/div_a))
         //    Base is 80Mhz, so 80/(10 + 0/1) = 8Mhz
         //    One cycle is 125ns
-        i2s->clkm_conf.clkm_div_a =6;// CLOCK_DIVIDER_A;
-        i2s->clkm_conf.clkm_div_b = 1;//CLOCK_DIVIDER_B;
-        i2s->clkm_conf.clkm_div_num = 4;//CLOCK_DIVIDER_N;
+        i2s->clkm_conf.clkm_div_a =1;// CLOCK_DIVIDER_A;
+        i2s->clkm_conf.clkm_div_b = 0;//CLOCK_DIVIDER_B;
+        i2s->clkm_conf.clkm_div_num = 1;//CLOCK_DIVIDER_N;
 
         i2s->fifo_conf.val = 0;
         i2s->fifo_conf.tx_fifo_mod_force_en = 1;
