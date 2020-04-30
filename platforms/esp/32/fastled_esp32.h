@@ -2,23 +2,15 @@
 
 #include "fastpin_esp32.h"
 #ifdef ESP32_VIRTUAL_DRIVER
-    #ifdef ESP_VIRTUAL_DRIVER_7
-	    #include "clockless_i2s_virtual_esp32_7.h"
-    #else
         #ifdef ESP_VIRTUAL_DRIVER_8
-            #include "clockless_i2s_virtual_esp32_84_2.h" //the 9 pîns with the order and the
+            #include "clockless_i2s_virtual_esp32_84_2.h" //the 8 pîns with the order
         #else
-            #ifdef ESP_VIRTUAL_DRIVER_82
-                #include "clockless_i2s_virtual_esp32_82.h"
+            #ifdef ESP_VIRTUAL_DRIVER_82_2
+                #include "clockless_i2s_virtual_esp32_82_2.h" //the 8n pins reveertse order
             #else
-                    #ifdef ESP_VIRTUAL_DRIVER_82_2
-                        #include "clockless_i2s_virtual_esp32_82_2.h"
-                    #else
-                        #include "clockless_i2s_virtual_esp32.h" //the 5 pins version
-                    #endif
+                #include "clockless_i2s_virtual_esp32.h" //the 5 pins version
             #endif
         #endif
-    #endif
 #else
 	#ifdef FASTLED_ESP32_I2S
 		#include "clockless_i2s_esp32.h"
