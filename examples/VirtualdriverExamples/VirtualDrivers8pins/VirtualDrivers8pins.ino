@@ -56,6 +56,9 @@ in that case
 	FastLED.addLeds<VIRTUAL_DRIVER,Pins,CLOCK_PIN, LATCH_PIN,GRB>(leds,NUM_LEDS_PER_STRIP); will have no effect in the order color
 
 
+#define DL_CLK 1 if you want to use the normal clock 80/(N+A/B) instead of the precise clock but it's not super stable may require restart
+
+
 */
 #include "FastLED.h"
 #define LATCH_PIN 13

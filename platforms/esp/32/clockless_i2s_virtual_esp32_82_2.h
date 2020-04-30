@@ -845,8 +845,8 @@ protected:
                 //rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
                 
                 // -- Data clock is computed as Base/(div_num + (div_b/div_a))
-                //    Base is 80Mhz, so 80/(10 + 0/1) = 8Mhz
-                //    One cycle is 125ns
+                //    Base is 80Mhz, so 80/(3+ 7/6) = 19.2Mhz
+                //   
                 i2s->clkm_conf.clkm_div_a =6;// CLOCK_DIVIDER_A;
                 i2s->clkm_conf.clkm_div_b = 7;//CLOCK_DIVIDER_B;
                 i2s->clkm_conf.clkm_div_num = 3;//CLOCK_DIVIDER_N;
