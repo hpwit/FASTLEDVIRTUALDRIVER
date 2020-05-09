@@ -667,13 +667,13 @@ static int CLOCK_DIVIDER_A;
 static int CLOCK_DIVIDER_B;
 static int dmaBufferActive;
 
-	static volatile bool stopSignal;
+    static volatile bool stopSignal;
  static volatile bool runningPixel=false;
 
-	  //CRGB  pixelg[8][5]; //volatile uint8_t pixelg[8][5];
-	   //uint8_t pixelg[16][8][4] ;
-	//volatile uint8_t pixelr[8][5];
-	//volatile uint8_t pixelb[8][5];
+      //CRGB  pixelg[8][5]; //volatile uint8_t pixelg[8][5];
+       //uint8_t pixelg[16][8][4] ;
+    //volatile uint8_t pixelr[8][5];
+    //volatile uint8_t pixelb[8][5];
   static volatile  int ledToDisplay;
 //CRGB *int_leds;
  static  int dmaBufferCount=2; //we use two buffers
@@ -683,7 +683,7 @@ static int dmaBufferActive;
         uint32_t raw[2];
     } Lines;*/
 
-	typedef union {
+    typedef union {
         uint8_t bytes[16];
         uint32_t shorts[8];
         uint32_t raw[2];
@@ -699,8 +699,8 @@ static uint8_t green_map[256];
 static uint8_t blue_map[256];
 static uint8_t red_map[256];
     static int ledType;
-	 static volatile CRGB *int_leds;
-	 static CRGB m_scale;
+     static volatile CRGB *int_leds;
+     static CRGB m_scale;
 //static Lines firstPixel[3];
 //template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 5>
 //<Pins,CLOCK_PIN,LATCH_PIN, GRB>
@@ -709,10 +709,10 @@ class ClocklessController : public CPixelLEDController<RGB_ORDER>
 {
 
   //int *Pins;
-   	const int deviceBaseIndex[2] = {I2S0O_DATA_OUT0_IDX, I2S1O_DATA_OUT0_IDX};
-	const int deviceClockIndex[2] = {I2S0O_BCK_OUT_IDX, I2S1O_BCK_OUT_IDX};
-	const int deviceWordSelectIndex[2] = {I2S0O_WS_OUT_IDX, I2S1O_WS_OUT_IDX};
-	const periph_module_t deviceModule[2] = {PERIPH_I2S0_MODULE, PERIPH_I2S1_MODULE};
+       const int deviceBaseIndex[2] = {I2S0O_DATA_OUT0_IDX, I2S1O_DATA_OUT0_IDX};
+    const int deviceClockIndex[2] = {I2S0O_BCK_OUT_IDX, I2S1O_BCK_OUT_IDX};
+    const int deviceWordSelectIndex[2] = {I2S0O_WS_OUT_IDX, I2S1O_WS_OUT_IDX};
+    const periph_module_t deviceModule[2] = {PERIPH_I2S0_MODULE, PERIPH_I2S1_MODULE};
 public:
 
     void init()
@@ -722,23 +722,23 @@ public:
      //Serial.printf("%d %d %d\n",CLOCK_PIN,LATCH_PIN,NUM_LED_PER_STRIP);
 
 
-	  for (int i = 0; i < NBIS2SERIALPINS; i++)
-		if (Pins[i] > -1)
-		{
-			PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[Pins[i]], PIN_FUNC_GPIO);
-			gpio_set_direction((gpio_num_t)Pins[i], (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
+      for (int i = 0; i < NBIS2SERIALPINS; i++)
+        if (Pins[i] > -1)
+        {
+            PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[Pins[i]], PIN_FUNC_GPIO);
+            gpio_set_direction((gpio_num_t)Pins[i], (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
      pinMode(Pins[i],OUTPUT);
-			gpio_matrix_out(Pins[i], deviceBaseIndex[I2S_DEVICE] + i+8, false, false);
-		}
+            gpio_matrix_out(Pins[i], deviceBaseIndex[I2S_DEVICE] + i+8, false, false);
+        }
 
-		//latch pin
-		PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[LATCH_PIN], PIN_FUNC_GPIO);
-			gpio_set_direction((gpio_num_t)LATCH_PIN, (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
+        //latch pin
+        PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[LATCH_PIN], PIN_FUNC_GPIO);
+            gpio_set_direction((gpio_num_t)LATCH_PIN, (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
      pinMode(LATCH_PIN,OUTPUT);
-			gpio_matrix_out(LATCH_PIN, deviceBaseIndex[I2S_DEVICE] + 23, false, false);
-	//if (baseClock > -1)
-	//clock pin
-		gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
+            gpio_matrix_out(LATCH_PIN, deviceBaseIndex[I2S_DEVICE] + 23, false, false);
+    //if (baseClock > -1)
+    //clock pin
+        gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
         /*
         RGB=0012,
         RBG=0021,
@@ -899,10 +899,10 @@ protected:
         dmaBuffers[0]->descriptor.qe.stqe_next = &(dmaBuffers[1]->descriptor);
         dmaBuffers[1]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
         pu((uint16_t*)dmaBuffers[0]->buffer); //latch
-		pu((uint16_t*)dmaBuffers[1]->buffer);
-		//pu((uint32_t*)this->dmaBuffers[2]->buffer);
-		pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
-		pu2((uint16_t*)dmaBuffers[1]->buffer);
+        pu((uint16_t*)dmaBuffers[1]->buffer);
+        //pu((uint32_t*)this->dmaBuffers[2]->buffer);
+        pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
+        pu2((uint16_t*)dmaBuffers[1]->buffer);
 
         // -- Allocate i2s interrupt
         SET_PERI_REG_BITS(I2S_INT_ENA_REG(I2S_DEVICE), I2S_OUT_EOF_INT_ENA_V, 1, I2S_OUT_EOF_INT_ENA_S);
@@ -991,17 +991,17 @@ protected:
     virtual void showPixels(PixelController<RGB_ORDER> & pixels)
     {
 
-		//Serial.println("Show");
-			int_leds=(CRGB*)pixels.mData;
-			m_scale=pixels.mScale;
+        //Serial.println("Show");
+            int_leds=(CRGB*)pixels.mData;
+            m_scale=pixels.mScale;
         nun_led_per_strip=  pixels.mLen;
-			//Serial.printf("led - r:%d v:%d b%d\n",m_scale.r,m_scale.g,m_scale.b);
+            //Serial.printf("led - r:%d v:%d b%d\n",m_scale.r,m_scale.g,m_scale.b);
 
-			 
-			//for(int j=0;j<50;j++)
-			//{
-				//Serial.printf("led n:%d r:%d v:%d b%d\n",j,int_leds[j].r,int_leds[j].g,int_leds[j].b);
-		//	}
+             
+            //for(int j=0;j<50;j++)
+            //{
+                //Serial.printf("led n:%d r:%d v:%d b%d\n",j,int_leds[j].r,int_leds[j].g,int_leds[j].b);
+        //    }
         for(int i=0;i<256;i++)
         {
             green_map[i]=(uint8_t)((int)(i*m_scale.g)/255);
@@ -1012,30 +1012,30 @@ protected:
                 ledToDisplay=0;
         stopSignal=false;
 
-		pu((uint16_t*)dmaBuffers[0]->buffer); //latch
-		pu((uint16_t*)dmaBuffers[1]->buffer);
-		pu((uint16_t*)dmaBuffers[2]->buffer);
-		//pu((uint32_t*)this->dmaBuffers[3]->buffer);
-		pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
-		pu2((uint16_t*)dmaBuffers[1]->buffer);
-		//pu2((uint32_t*)this->dmaBuffers[2]->buffer);
-		fillbuffer6((uint16_t*)dmaBuffers[0]->buffer);
-		 ledToDisplay++;
-		//fillbuffer2((uint32_t*)dmaBuffers[1]->buffer);
-		 //ledToDisplay++;
+        pu((uint16_t*)dmaBuffers[0]->buffer); //latch
+        pu((uint16_t*)dmaBuffers[1]->buffer);
+        pu((uint16_t*)dmaBuffers[2]->buffer);
+        //pu((uint32_t*)this->dmaBuffers[3]->buffer);
+        pu2((uint16_t*)dmaBuffers[0]->buffer); //first pulse
+        pu2((uint16_t*)dmaBuffers[1]->buffer);
+        //pu2((uint32_t*)this->dmaBuffers[2]->buffer);
+        fillbuffer6((uint16_t*)dmaBuffers[0]->buffer);
+         ledToDisplay++;
+        //fillbuffer2((uint32_t*)dmaBuffers[1]->buffer);
+         //ledToDisplay++;
 
         dmaBufferActive=1;
-		// this->dmaBuffers[3]->next(this->dmaBuffers[0]);
-		/*
-		 dmaBuffers[1]->next(this->dmaBuffers[0]);
-		 dmaBuffers[2]->next(this->dmaBuffers[0]);
-		 dmaBuffers[0]->next(this->dmaBuffers[1]); //on utilise le dernier buffer*/
-		 dmaBuffers[1]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
+        // this->dmaBuffers[3]->next(this->dmaBuffers[0]);
+        /*
+         dmaBuffers[1]->next(this->dmaBuffers[0]);
+         dmaBuffers[2]->next(this->dmaBuffers[0]);
+         dmaBuffers[0]->next(this->dmaBuffers[1]); //on utilise le dernier buffer*/
+         dmaBuffers[1]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
         dmaBuffers[2]->descriptor.qe.stqe_next = &(dmaBuffers[0]->descriptor);
-		dmaBuffers[0]->descriptor.qe.stqe_next = &(dmaBuffers[1]->descriptor);
+        dmaBuffers[0]->descriptor.qe.stqe_next = &(dmaBuffers[1]->descriptor);
         runningPixel=true;
         //startTX();
-		i2sStart();
+        i2sStart();
         while(runningPixel==true);
         delayMicroseconds(50);
 
@@ -1045,7 +1045,7 @@ protected:
     static IRAM_ATTR void interruptHandler(void *arg)
     {
 
-	/*
+    /*
         if (i2s->int_st.out_eof) {
             i2s->int_clr.val = i2s->int_raw.val;
 
@@ -1059,8 +1059,8 @@ protected:
         }*/
 
         //Lines pixel[3];
-		 if (!i2s->int_st.out_eof)
-		 return;
+         if (!i2s->int_st.out_eof)
+         return;
          i2s->int_clr.val = i2s->int_raw.val;
 
 
@@ -1079,20 +1079,20 @@ protected:
 
 
 
-			if(ledToDisplay==NUM_LEDS_PER_STRIP)
-			{
-				pu( (uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
+            if(ledToDisplay==NUM_LEDS_PER_STRIP)
+            {
+                pu( (uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
 
 
                 /*i2sStop();
                 runningPixel=false;
                 return;*/
-				            stopSignal=true;
-			}
-			fillbuffer6((uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
-			ledToDisplay++;
+                            stopSignal=true;
+            }
+            fillbuffer6((uint16_t*)dmaBuffers[dmaBufferActive]->buffer);
+            ledToDisplay++;
             dmaBufferActive = (dmaBufferActive + 1)% 2;
-			//if(ledToDisplay)
+            //if(ledToDisplay)
         }
         else
         {
@@ -1338,27 +1338,27 @@ static void transpose24x1_noinline(unsigned char *A, uint8_t *B,uint8_t offset) 
 
 
     *((uint32_t*)B) = (uint32_t)(((y & 0xff) |  (  (y1 & 0xff) << 8 )  |  (  (y2 & 0xff) << 16 ))<<8 )&0xfffff00   ;
-	B-=offset;
+    B-=offset;
 
     *((uint32_t*)(B)) = (uint32_t)(((y & 0xff00) |((y1&0xff00) <<8)  |((y2&0xff00) <<16)  )<<8  )&0xfffff00;
-	B-=offset;
+    B-=offset;
 
     *((uint32_t*)(B)) =(uint32_t)((  (  (y & 0xff0000) >>16)|((y1&0xff0000) >>8)   |((y2&0xff0000))   )<<8  )&0xfffff00;
-	B-=offset;
+    B-=offset;
 
     *((uint32_t*)(B)) = (uint32_t)(((y & 0xff000000) >>16 |((y1&0xff000000)>>8 ) |((y2&0xff000000) )  ))&0xfffff00;
-	B-=offset;
+    B-=offset;
 
 
 
     *((uint32_t*)B) =(uint32_t)(( (x & 0xff) |((x1&0xff) <<8)  |((x2&0xff) <<16))<<8 )&0xfffff00;
-	B-=offset;
+    B-=offset;
 
     *((uint32_t*)(B)) = (uint32_t)(((x & 0xff00) |((x1&0xff00) <<8)    |((x2&0xff00) <<16)    ))&0xfffff00;
-	B-=offset;
+    B-=offset;
 
     *((uint32_t*)(B)) = (uint32_t)( ( (  (x & 0xff0000) >>16)|((x1&0xff0000) >>8)   |((x2&0xff0000))   )<<8  )&0xfffff00;
-	B-=offset;
+    B-=offset;
 
     *((uint32_t*)(B)) = (uint32_t)(((x & 0xff000000) >>16 |((x1&0xff000000)>>8 )    |((x2&0xff000000) )    ))&0xfffff00;
 
@@ -1372,13 +1372,13 @@ static void fillbuffer6(uint16_t *buff)
     //return;
     //uint16_t *g;
   //  g=buff;
-	Lines firstPixel[3];
+    Lines firstPixel[3];
 
     volatile CRGB * poli;
        // Lines secondPixel[3];
-	//	int nblines=5;
+    //    int nblines=5;
 
-//  int nbpins=20;//	this->nbpins;
+//  int nbpins=20;//    this->nbpins;
 
 
   // uint32_t l2=ledToDisplay;
@@ -1390,7 +1390,7 @@ static void fillbuffer6(uint16_t *buff)
     //uint32_t off=nun_led_per_strip*NUM_VIRT_PINS;
     
     //jump en deux
-	poli+=NUM_LEDS_PER_STRIP;
+    poli+=NUM_LEDS_PER_STRIP;
     
 #ifndef STATIC_COLOR_PER_PIN
     for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
@@ -1513,12 +1513,12 @@ static void fillbuffer6(uint16_t *buff)
 #endif
 #endif
 
-	transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+    transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
     
 
-	//on revient strip 1
+    //on revient strip 1
     poli-=I2S_OFF3;
     
     
@@ -1655,7 +1655,7 @@ static void fillbuffer6(uint16_t *buff)
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
     //l2+=NUM_LEDS_PER_STRIP;
 
-	//on va en strip 4
+    //on va en strip 4
     poli-=I2S_OFF4;
     
     
@@ -1791,11 +1791,11 @@ static void fillbuffer6(uint16_t *buff)
 
 
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+                   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-	  //on va en strip3
+      //on va en strip3
        poli-=I2S_OFF3;
        buff++;
 
@@ -1924,12 +1924,12 @@ static void fillbuffer6(uint16_t *buff)
 
 
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+                   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-	  //on va en strip6
-	  poli-=I2S_OFF4;
+      //on va en strip6
+      poli-=I2S_OFF4;
        buff++;
 
 #ifndef STATIC_COLOR_PER_PIN
@@ -2057,11 +2057,11 @@ static void fillbuffer6(uint16_t *buff)
 
 
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+                   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-	  //on va en strip5
+      //on va en strip5
        poli-=I2S_OFF3;
        buff++;
 
@@ -2189,12 +2189,12 @@ static void fillbuffer6(uint16_t *buff)
 
 
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+                   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-	  //on va en strip8
-	  poli-=I2S_OFF4;
+      //on va en strip8
+      poli-=I2S_OFF4;
        buff++;
 #ifndef STATIC_COLOR_PER_PIN
     for(int pin=0;pin<NBIS2SERIALPINS;pin++) {
@@ -2321,11 +2321,11 @@ static void fillbuffer6(uint16_t *buff)
 
 
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+                   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
-	  //on va en strip7
+      //on va en strip7
        poli-=I2S_OFF3;
        buff++;
 
@@ -2453,7 +2453,7 @@ static void fillbuffer6(uint16_t *buff)
 
 
 
-       			transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
+                   transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
       transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
 
@@ -2469,9 +2469,9 @@ static void fillbuffer6(uint16_t *buff)
         i2sReset();
         //Serial.println(dmaBuffers[0]->sampleCount());
         i2s->lc_conf.val=I2S_OUT_DATA_BURST_EN | I2S_OUTDSCR_BURST_EN | I2S_OUT_DATA_BURST_EN;
-		//i2s.rx_eof_num = dmaBuffers[2]->sampleCount();
+        //i2s.rx_eof_num = dmaBuffers[2]->sampleCount();
         i2s->out_link.addr = (uint32_t) & (dmaBuffers[2]->descriptor);
-			//i2s.in_link.addr = (uint32_t) & (dmaBuffers[2]->descriptor);
+            //i2s.in_link.addr = (uint32_t) & (dmaBuffers[2]->descriptor);
         i2s->out_link.start = 1;
         ////vTaskDelay(5);
         i2s->int_clr.val = i2s->int_raw.val;

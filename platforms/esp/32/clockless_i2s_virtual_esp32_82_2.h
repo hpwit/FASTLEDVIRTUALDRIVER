@@ -860,7 +860,7 @@ protected:
         //rtc_clk_apll_enable(true, 123, 20,6, 1); //16.8Mhz 6 pins +1 latchtch
         //rtc_clk_apll_enable(true, 164, 112,9, 2); //16.8Mhz 6 pins +1 latchtch
         rtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latchrtc_clk_apll_enable(true, 31, 133,7, 1); //19.2Mhz 7 pins +1 latch
-        
+        //rtc_clk_apll_enable(true, 41, 92,11, 2);
         // -- Data clock is computed as Base/(div_num + (div_b/div_a))
         //    Base is 80Mhz, so 80/(10 + 0/1) = 8Mhz
         //    One cycle is 125ns
@@ -903,11 +903,11 @@ protected:
                                      &interruptHandler, 0, &gI2S_intr_handle);
         
         // -- Create a semaphore to block execution until all the controllers are done
-        /* if (gTX_sem == NULL) {
+         if (gTX_sem == NULL) {
          gTX_sem = xSemaphoreCreateBinary();
          xSemaphoreGive(gTX_sem);
          }
-         */
+         
         // Serial.println("Init I2S");
         gInitialized = true;
     }
@@ -1036,7 +1036,13 @@ protected:
         //startTX();
         i2sStart();
         //long time3=ESP.getCycleCount();
+#ifdef SEMAPHORE
+        xSemaphoreTake(gTX_sem, portMAX_DELAY);
+        i2sStop();
+#else
+        
         while(runningPixel==true);
+#endif
         //time3=ESP.getCycleCount()-time3;
         // Serial.printf("fps:%f\n",(float)240000000L/time3);
         delayMicroseconds(50);
@@ -1069,8 +1075,15 @@ protected:
         if(stopSignal)
         {
             // Serial.println("stop");
-            i2sStop();
+
+#ifdef SEMAPHORE
+            portBASE_TYPE HPTaskAwoken = 0;
+            xSemaphoreGiveFromISR(gTX_sem, &HPTaskAwoken);
+            if(HPTaskAwoken == pdTRUE) portYIELD_FROM_ISR();
+#else
+             i2sStop();
             runningPixel=false;
+#endif
             return;
         }
         if(ledToDisplay<=NUM_LEDS_PER_STRIP)
