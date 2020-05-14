@@ -1007,7 +1007,7 @@ protected:
             green_map[i]=(uint8_t)((int)(i*m_scale.g)/255);
             blue_map[i]=(uint8_t)((int)(i*m_scale.b)/255);
             red_map[i]=(uint8_t)((int)(i*m_scale.r)/255);
-            // Serial.printf("led -  i:%d scale:%d r:%d v:%d b:%d\n",i,m_scale.r,green_map[i],red_map[i],blue_map[i]);
+            //Serial.printf("led -  i:%d scale:%d r:%d v:%d b:%d\n",i,m_scale.r,green_map[i],red_map[i],blue_map[i]);
         }
                 ledToDisplay=0;
         stopSignal=false;
