@@ -944,7 +944,7 @@ protected:
         {
 
             uint16_t mas= 0xFFFF & (~( 0xffff << (NBIS2SERIALPINS)));
-            printf("mas%d\n",mas);
+            //printf("mas%d\n",mas);
             for (int j=0;j<24;j++)
             {
                 // for (int i=0;i<NUM_VIRT_PINS;i++)
