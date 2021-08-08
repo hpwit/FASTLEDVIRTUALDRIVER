@@ -65,11 +65,11 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 #ifndef NUM_LEDS_PER_STRIP
 #define NUM_LEDS_PER_STRIP 256
 #endif
-#define OFFSET NUM_VIRT_PINS + 1
-#define I2S_OFF (NUM_VIRT_PINS + 1 )* NUM_LEDS_PER_STRIP
-#define I2S_OFF2 I2S_OFF * NBIS2SERIALPINS - NUM_LEDS_PER_STRIP
-#define I2S_OFF3 I2S_OFF * NBIS2SERIALPINS + NUM_LEDS_PER_STRIP
-#define I2S_OFF4 I2S_OFF * NBIS2SERIALPINS -  3 * NUM_LEDS_PER_STRIP
+#define OFFSET (NUM_VIRT_PINS + 1)
+#define I2S_OFF ((NUM_VIRT_PINS + 1 )* NUM_LEDS_PER_STRIP)
+#define I2S_OFF2 (I2S_OFF * NBIS2SERIALPINS - NUM_LEDS_PER_STRIP)
+#define I2S_OFF3 (I2S_OFF * NBIS2SERIALPINS + NUM_LEDS_PER_STRIP)
+#define I2S_OFF4 (I2S_OFF * NBIS2SERIALPINS -  3 * NUM_LEDS_PER_STRIP)
 #define AA (0x00AA00AAL)
 #define CC (0x0000CCCCL)
 #define FF (0xF0F0F0F0L)
@@ -735,7 +735,7 @@ public:
         PIN_FUNC_SELECT(GPIO_PIN_MUX_REG[LATCH_PIN], PIN_FUNC_GPIO);
             gpio_set_direction((gpio_num_t)LATCH_PIN, (gpio_mode_t)GPIO_MODE_DEF_OUTPUT);
      pinMode(LATCH_PIN,OUTPUT);
-            gpio_matrix_out(LATCH_PIN, deviceBaseIndex[I2S_DEVICE] + 23, false, false);
+            gpio_matrix_out(LATCH_PIN, deviceBaseIndex[I2S_DEVICE] + NBIS2SERIALPINS+8, false, false);
     //if (baseClock > -1)
     //clock pin
         gpio_matrix_out(CLOCK_PIN, deviceClockIndex[I2S_DEVICE], false, false);
@@ -923,9 +923,10 @@ protected:
     static void pu(uint16_t* buff)
     {
         memset((uint8_t*)buff,0,(NUM_VIRT_PINS+1)*8*3*3*2);
+        uint16_t mask1= 1<<NBIS2SERIALPINS;
         for (int i=0;i<24*3;i++)
         {
-            buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)-1-5]=0x8000;
+            buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)-1-5]=mask1;//0x8000;
             //buff[NUM_VIRT_PINS+i*(NUM_VIRT_PINS+1)]=0x02;
         }
     }
@@ -942,7 +943,8 @@ protected:
        static  void pu2(uint16_t* buff)
         {
 
-
+            uint16_t mas= 0xFFFF & (~( 0xffff << (NBIS2SERIALPINS)));
+            printf("mas%d\n",mas);
             for (int j=0;j<24;j++)
             {
                 // for (int i=0;i<NUM_VIRT_PINS;i++)
@@ -950,13 +952,13 @@ protected:
                 //*buff=0x7FFF;
                 // buff++;
                 buff[1+j*(3*(NUM_VIRT_PINS+1))]=0xFFFF;
-                buff[0+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
-                buff[3+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
-                buff[2+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
-                buff[5+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
-                buff[4+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
-                buff[7+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
-                buff[6+j*(3*(NUM_VIRT_PINS+1))]=0x7FFF;
+                buff[0+j*(3*(NUM_VIRT_PINS+1))]=mas;
+                buff[3+j*(3*(NUM_VIRT_PINS+1))]=mas;
+                buff[2+j*(3*(NUM_VIRT_PINS+1))]=mas;
+                buff[5+j*(3*(NUM_VIRT_PINS+1))]=mas;
+                buff[4+j*(3*(NUM_VIRT_PINS+1))]=mas;
+                buff[7+j*(3*(NUM_VIRT_PINS+1))]=mas;
+                buff[6+j*(3*(NUM_VIRT_PINS+1))]=mas;
                 //buff[NUM_VIRT_PINS-2+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
                 //buff[NUM_VIRT_PINS-3+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
                 // buff[NUM_VIRT_PINS-4+j*(3*(NUM_VIRT_PINS+1))]=0x00FF;
@@ -1142,8 +1144,11 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
         y = *(unsigned int*)(A);
         x = *(unsigned int*)(A+4);
         y1 = *(unsigned int*)(A+8);
-    //x1=0;
+#if NBIS2SERIALPINS >= 12
      x1 = *(unsigned int*)(A+12);
+#else
+    x1=0;
+#endif
 
 
 
@@ -1151,8 +1156,11 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
         // pre-transform x
         t = (x ^ (x >> 7)) & AA;  x = x ^ t ^ (t << 7);
         t = (x ^ (x >>14)) & CC;  x = x ^ t ^ (t <<14);
+    
+#if NBIS2SERIALPINS >= 12
        t = (x1 ^ (x1 >> 7)) & AA;  x1 = x1 ^ t ^ (t << 7);
        t = (x1 ^ (x1 >>14)) & CC;  x1 = x1 ^ t ^ (t <<14);
+#endif
         // pre-transform y
         t = (y ^ (y >> 7)) & AA;  y = y ^ t ^ (t << 7);
         t = (y ^ (y >>14)) & CC;  y = y ^ t ^ (t <<14);
@@ -1164,11 +1172,14 @@ static    void transpose16x1_noinline2(unsigned char *A, uint8_t *B) {
         t = (x & FF) | ((y >> 4) & FF2);
         y = ((x << 4) & FF) | (y & FF2);
         x = t;
-
+#if NBIS2SERIALPINS >= 12
         t= (x1 & FF) | ((y1 >> 4) & FF2);
         y1 = ((x1 << 4) & FF) | (y1 & FF2);
         x1 = t;
-
+#else
+    x1 =((y1 >> 4) & FF2);
+    y1 =  (y1 & FF2);
+#endif
 
     /*
         *((uint16_t*)B) = (uint16_t)((y & 0xff) |  (  (y1 & 0xff) << 8 ) )   ;
@@ -1647,9 +1658,9 @@ static void fillbuffer6(uint16_t *buff)
 
     //l2+=nun_led_per_strip;
     
-    firstPixel[0].bytes[15]=255;
-    firstPixel[1].bytes[15]=255;
-    firstPixel[2].bytes[15]=255;
+    firstPixel[0].bytes[NBIS2SERIALPINS]=255;
+    firstPixel[1].bytes[NBIS2SERIALPINS]=255;
+    firstPixel[2].bytes[NBIS2SERIALPINS]=255;
     transpose16x1_noinline2(firstPixel[0].bytes,(uint8_t*)(buff));
     transpose16x1_noinline2(firstPixel[1].bytes,(uint8_t*)(buff+192));
     transpose16x1_noinline2(firstPixel[2].bytes,(uint8_t*)(buff+384));
@@ -1661,9 +1672,9 @@ static void fillbuffer6(uint16_t *buff)
     
     
     buff++;
-    firstPixel[0].bytes[15]=0;
-    firstPixel[1].bytes[15]=0;
-    firstPixel[2].bytes[15]=0;
+    firstPixel[0].bytes[NBIS2SERIALPINS]=0;
+    firstPixel[1].bytes[NBIS2SERIALPINS]=0;
+    firstPixel[2].bytes[NBIS2SERIALPINS]=0;
     
 
 #ifndef STATIC_COLOR_PER_PIN

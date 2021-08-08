@@ -15,6 +15,13 @@ __attribute__ ((always_inline)) inline static uint32_t __clock_cycles() {
 }
 
 #define FASTLED_HAS_CLOCKLESS 1
+#ifndef DECAL
+#define DECAL 0
+#endif
+
+#ifndef STOPLED
+#define STOPLED 0
+#endif
 
 template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 50>
 class ClocklessController : public CPixelLEDController<RGB_ORDER> {
@@ -68,9 +75,11 @@ protected:
 		}
 	}
 
+
 	// This method is made static to force making register Y available to use for data on AVR - if the method is non-static, then
 	// gcc will use register Y for the this pointer.
 	static uint32_t ICACHE_RAM_ATTR showRGBInternal(PixelController<RGB_ORDER> pixels) {
+		uint16_t ledtodisplay=0;
 		// Setup the pixel controller and load/scale the first byte
 		pixels.preStepFirstByteDithering();
 		register uint32_t b = pixels.loadAndScale0();
@@ -89,7 +98,17 @@ protected:
 
 			// Write third byte, read 1st byte of next pixel
 			writeBits<8+XTRA0>(last_mark, b);
-      b = pixels.advanceAndLoadAndScale0();
+			//going to the next pixel
+			ledtodisplay++;
+			
+			if(ledtodisplay==STOPLED)
+			{
+				
+			 b = pixels.advanceByAndLoadAndScale0(DECAL+1);
+			 ledtodisplay+=(DECAL);
+			}
+			else
+      			b = pixels.advanceAndLoadAndScale0();
 
 			#if (FASTLED_ALLOW_INTERRUPTS == 1)
 			os_intr_unlock();

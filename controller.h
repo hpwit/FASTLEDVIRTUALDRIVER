@@ -326,6 +326,7 @@ struct PixelController {
         // advance the data pointer forward, adjust position counter
          __attribute__((always_inline)) inline void advanceData() { mData += mAdvance; mLenRemaining--;}
 
+        __attribute__((always_inline)) inline void advanceData(uint16_t decal) { mData += (mAdvance*decal); mLenRemaining--;}     
         // step the dithering forward
          __attribute__((always_inline)) inline void stepDithering() {
              // IF UPDATING HERE, BE SURE TO UPDATE THE ASM VERSION IN
@@ -356,6 +357,7 @@ struct PixelController {
         template<int SLOT>  __attribute__((always_inline)) inline static uint8_t loadAndScale(PixelController & pc, int lane, uint8_t scale) { return scale8(pc.loadByte<SLOT>(pc, lane), scale); }
 
         template<int SLOT>  __attribute__((always_inline)) inline static uint8_t advanceAndLoadAndScale(PixelController & pc) { pc.advanceData(); return pc.loadAndScale<SLOT>(pc); }
+        template<int SLOT>  __attribute__((always_inline)) inline static uint8_t advanceByAndLoadAndScale(PixelController & pc, uint16_t decal) { pc.advanceData(decal); return pc.loadAndScale<SLOT>(pc); }  
         template<int SLOT>  __attribute__((always_inline)) inline static uint8_t advanceAndLoadAndScale(PixelController & pc, int lane) { pc.advanceData(); return pc.loadAndScale<SLOT>(pc, lane); }
         template<int SLOT>  __attribute__((always_inline)) inline static uint8_t advanceAndLoadAndScale(PixelController & pc, int lane, uint8_t scale) { pc.advanceData(); return pc.loadAndScale<SLOT>(pc, lane, scale); }
 
@@ -380,7 +382,7 @@ struct PixelController {
         __attribute__((always_inline)) inline uint8_t loadAndScale2() { return loadAndScale<2>(*this); }
         __attribute__((always_inline)) inline uint8_t advanceAndLoadAndScale0() { return advanceAndLoadAndScale<0>(*this); }
         __attribute__((always_inline)) inline uint8_t stepAdvanceAndLoadAndScale0() { stepDithering(); return advanceAndLoadAndScale<0>(*this); }
-
+        __attribute__((always_inline)) inline uint8_t advanceByAndLoadAndScale0(uint16_t decal) { return advanceByAndLoadAndScale<0>(*this,decal); }
         __attribute__((always_inline)) inline uint8_t getScale0() { return getscale<0>(*this); }
         __attribute__((always_inline)) inline uint8_t getScale1() { return getscale<1>(*this); }
         __attribute__((always_inline)) inline uint8_t getScale2() { return getscale<2>(*this); }

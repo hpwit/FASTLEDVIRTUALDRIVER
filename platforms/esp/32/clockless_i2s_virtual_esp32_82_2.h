@@ -1069,7 +1069,9 @@ protected:
         //Lines pixel[3];
         if (!i2s->int_st.out_eof)
             return;
-        i2s->int_clr.val = i2s->int_raw.val;
+        //REG_WRITE(I2S_INT_CLR_REG(((I2S *)arg)->i2sIndex), (REG_READ(I2S_INT_RAW_REG(((I2S *)arg)->i2sIndex)) & 0xffffffc0) | 0x3f);
+        REG_WRITE(I2S_INT_CLR_REG(0), (REG_READ(I2S_INT_RAW_REG(0)) & 0xffffffc0) | 0x3f);
+        //i2s->int_clr.val = i2s->int_raw.val;
         
         
         if(stopSignal)
